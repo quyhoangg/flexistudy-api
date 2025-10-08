@@ -88,6 +88,7 @@
 
 	<build>
 		<plugins>
+			<!-- ✅ Plugin compile (Lombok + MapStruct) vẫn giữ nguyên -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -116,12 +117,25 @@
 						</path>
 					</annotationProcessorPaths>
 					<compilerArgs>
-						<!-- Tùy chọn cho MapStruct -->
 						<arg>-Amapstruct.suppressGeneratorTimestamp=true</arg>
 						<arg>-Amapstruct.defaultComponentModel=spring</arg>
 						<arg>-Amapstruct.verbose=true</arg>
 					</compilerArgs>
 				</configuration>
+			</plugin>
+
+			<!-- ✅ Bổ sung plugin Spring Boot để tạo runnable fat JAR -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${project.parent.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
