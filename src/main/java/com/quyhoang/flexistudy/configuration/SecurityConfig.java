@@ -3,7 +3,6 @@ package com.quyhoang.flexistudy.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,35 +23,25 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final String[] PUBLIC_ENDPOINTS = {
-            "/auth/**",
-            "/users/**",
-            "/uploads/**",
-            "/companies/upload-logo/**",
-            "/media/download/**",
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/api/v1/swagger-ui/**",      // ✅ thêm để dùng Swagger trên server
-            "/api/v1/v3/api-docs/**"      // ✅ thêm cho chắc chắn
+    private final String[] PUBLIC_ENDPOINTS = {
+            "/users", "/auth/token", "/auth/introspect", "/auth/logout",
+            "/auth/refresh", "/media/download/**", "/users/**", "/uploads/**",
+            "/companies/upload-logo/**", "/v3/api-docs/**", "/swagger-ui/**",
+            "/swagger-ui.html"
     };
 
     @Autowired
     private CustomJwtDecoder customJwtDecoder;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // ✅ Bật CORS theo cấu hình bên dưới
-                .cors(Customizer.withDefaults())
-                // ✅ Tắt CSRF (để test API dễ hơn)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ bật cors ở đây
                 .csrf(AbstractHttpConfigurer::disable)
-                // ✅ Cho phép các endpoint public
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(req -> req
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )
-                // ✅ JWT Resource Server (vẫn giữ logic bảo mật)
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
                                 .decoder(customJwtDecoder)
@@ -64,23 +53,14 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * ✅ Cấu hình CORS cho phép Swagger UI và frontend gọi API mà không bị chặn
-     */
+    // ✅ Cấu hình CORS cho phép mọi domain test (Swagger, frontend, v.v.)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of("*")); // hoặc List.of("https://flexistudy-api-1.onrender.com")
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);
-
-        // ✅ Cho phép tất cả domain (có thể thay bằng domain FE nếu cần)
-        config.setAllowedOriginPatterns(List.of("*"));
-
-        // ✅ Cho phép tất cả headers & methods
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // ✅ Cho phép header Authorization (JWT)
-        config.addExposedHeader("Authorization");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -91,9 +71,9 @@ public class SecurityConfig {
     JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
         converter.setAuthorityPrefix("");
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(converter);
-        return jwtAuthenticationConverter;
+        JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+        jwtConverter.setJwtGrantedAuthoritiesConverter(converter);
+        return jwtConverter;
     }
 
     @Bean
