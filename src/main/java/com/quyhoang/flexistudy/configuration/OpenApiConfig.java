@@ -13,17 +13,21 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
+    @Value("${server.servlet.context-path:/}")
+    private String contextPath;
+
     @Bean
-    public OpenAPI customOpenAPI(
-            @Value("${openapi.service.title}") String title,
-            @Value("${openapi.service.version}") String version,
-            @Value("${openapi.service.server}") String serverUrl) {
+    public OpenAPI customOpenAPI() {
+        // ✅ Xác định server URL động: nếu deploy lên Render, Swagger sẽ tự hiểu đúng
+        String serverUrl = System.getenv("RENDER_EXTERNAL_URL") != null
+                ? System.getenv("RENDER_EXTERNAL_URL") + contextPath
+                : "http://localhost:8080" + contextPath;
+
         return new OpenAPI()
-                .openapi("3.0.0")
-                .servers(List.of(new Server().url(serverUrl)))
-                .info(new Info().title(title)
-                        .description("API documents")
-                        .version(version)
-                        .license(new License().name("Apache 2.0").url("https://springdoc.org")));
+                .info(new Info()
+                        .title("Flexistudy Service API")
+                        .version("1.0.0")
+                        .description("API documentation for Flexistudy project"))
+                .servers(List.of(new Server().url(serverUrl)));
     }
 }

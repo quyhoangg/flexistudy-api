@@ -22,12 +22,6 @@ jwt:
   valid-Duration: 3600 # in second
   refreshable-duration: 360000 # in second
 
-openapi:
-  service:
-    api-docs: Flexistudy-Service API
-    server: http://localhost:8080
-    title: Flexistudy-Service API
-    version: 1.0.0
 springdoc:
   swagger-ui:
     enabled: true
