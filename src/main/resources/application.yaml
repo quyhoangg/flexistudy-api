@@ -11,6 +11,7 @@ spring:
     url: "jdbc:mysql://maglev.proxy.rlwy.net:45588/railway?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
     username: root
     password: gUhlowiuNMAkpxBSUvvkNUpANFcrSNKU
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
