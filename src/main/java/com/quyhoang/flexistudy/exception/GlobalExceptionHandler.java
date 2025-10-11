@@ -12,78 +12,109 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Global exception handler for the application.
+ * Captures and converts exceptions into unified API responses.
+ */
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final String MIN_ATTRIBUTE = "min";
 
-    @ExceptionHandler(value = Exception.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
-        exception.printStackTrace();
-        ApiResponse apiResponse = new ApiResponse();
+    /**
+     * Handle uncategorized exceptions (default fallback).
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse> handleGeneralException(Exception exception) {
+        log.error("Unhandled exception: ", exception);
 
-        apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
-        apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
-        return ResponseEntity.badRequest().body(apiResponse);
+        ApiResponse response = ApiResponse.builder()
+                .code(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
+                .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
+                .build();
+
+        return ResponseEntity
+                .status(ErrorCode.UNCATEGORIZED_EXCEPTION.getStatusCode())
+                .body(response);
     }
 
-    @ExceptionHandler(value = AppException.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException(AppException exception) {
+    /**
+     * Handle custom application exceptions.
+     */
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiResponse> handleAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
 
-        ApiResponse apiResponse = new ApiResponse();
+        ApiResponse response = ApiResponse.builder()
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .build();
 
-        apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
-
-        return ResponseEntity.status(errorCode.getStatusCode())
-                .body(apiResponse);
+        return ResponseEntity
+                .status(errorCode.getStatusCode())
+                .body(response);
     }
 
-    @ExceptionHandler(value = AccessDeniedException.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException(AccessDeniedException exception) {
+    /**
+     * Handle Spring Security access denied exceptions.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse> handleAccessDeniedException(AccessDeniedException exception) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
-        return ResponseEntity.status(errorCode.getStatusCode()).body(
-                ApiResponse.builder()
-                        .code(errorCode.getCode())
-                        .message(errorCode.getMessage())
-                        .build()
-        );
+
+        ApiResponse response = ApiResponse.builder()
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .build();
+
+        return ResponseEntity
+                .status(errorCode.getStatusCode())
+                .body(response);
     }
 
-    @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    ResponseEntity<ApiResponse> handlingValidation(MethodArgumentNotValidException exception) {
-        String enumKey = exception.getFieldError().getDefaultMessage();
-
+    /**
+     * Handle validation errors (e.g., @Valid, @NotNull, @Min, etc.).
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse> handleValidationException(MethodArgumentNotValidException exception) {
+        String enumKey = Objects.requireNonNull(exception.getFieldError()).getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_KEY;
         Map<String, Object> attributes = null;
+
         try {
+            // Try to map validation message to defined ErrorCode enum
             errorCode = ErrorCode.valueOf(enumKey);
 
-            var constraintViolations = exception.getBindingResult()
+            var constraintViolation = exception.getBindingResult()
                     .getAllErrors().getFirst().unwrap(ConstraintViolation.class);
 
-            attributes = constraintViolations.getConstraintDescriptor().getAttributes();
+            attributes = constraintViolation.getConstraintDescriptor().getAttributes();
+            log.debug("Validation attributes: {}", attributes);
 
-            log.info(attributes.toString());
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid ErrorCode key: {}", enumKey);
+        }
 
-        } catch (IllegalArgumentException e) {}
+        String message = Objects.nonNull(attributes)
+                ? formatMessage(errorCode.getMessage(), attributes)
+                : errorCode.getMessage();
 
+        ApiResponse response = ApiResponse.builder()
+                .code(errorCode.getCode())
+                .message(message)
+                .build();
 
-        ApiResponse apiResponse = new ApiResponse();
-
-        apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(Objects.nonNull(attributes) ?
-                mapAttribute(errorCode.getMessage(),  attributes) :
-                errorCode.getMessage());
-
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity.badRequest().body(response);
     }
 
-    private String mapAttribute(String message, Map<String, Object> attributes) {
-        String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));
-
-        return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
+    /**
+     * Replace placeholders in message (e.g., "{min}") with actual values.
+     */
+    private String formatMessage(String message, Map<String, Object> attributes) {
+        if (attributes.containsKey(MIN_ATTRIBUTE)) {
+            return message.replace("{" + MIN_ATTRIBUTE + "}", String.valueOf(attributes.get(MIN_ATTRIBUTE)));
+        }
+        return message;
     }
 }

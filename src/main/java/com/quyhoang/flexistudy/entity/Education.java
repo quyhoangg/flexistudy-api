@@ -4,20 +4,24 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Skill {
+@Table(name = "educations")
+public class Education {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
+    UUID id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    String name;
+    @Column(nullable = false)
+    String userId; // hoặc @ManyToOne nếu bạn muốn
 
-    @Column(length = 100)
-    String category;
+    String school;
+    String degree;
+    String field;
 }

@@ -36,7 +36,8 @@ public class User {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
+    @Column(nullable = false)
+    boolean profileCompleted = false;
     @ManyToMany
     Set<Role> roles;
 
@@ -48,7 +49,18 @@ public class User {
     )
     private Set<Job> savedJobs = new HashSet<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_skills",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id")
+    )
+    Set<Skill> skills = new HashSet<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     Company company;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<AvailabilityWindow> availabilityWindows = new HashSet<>();
 }

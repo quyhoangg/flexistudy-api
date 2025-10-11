@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -20,23 +21,34 @@ import java.util.Set;
 public class JobCreationRequest {
     @NotBlank
     String title;
+
     String description;
+    String requirements;
+    String benefits;
+    String address;
+    LocalDateTime expiryDate;
 
     @NotNull
     EmployeeType type;
+
     Integer minSalary;
     Integer maxSalary;
-    @NotBlank String currency;
+    @NotBlank
+    String currency;
 
     @NotNull
     JobCategory category;
 
     @NotNull
     WorkMode mode;
-    @NotBlank String city;
+
+    @NotBlank
+    String city;
 
     @NotBlank
     String companyId;
+
     @NotEmpty
     Set<String> skillIds;
 }
+

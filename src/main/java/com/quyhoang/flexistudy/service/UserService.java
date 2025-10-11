@@ -1,17 +1,16 @@
 package com.quyhoang.flexistudy.service;
 
 import com.quyhoang.flexistudy.dto.PageResponse;
+import com.quyhoang.flexistudy.dto.request.RegisterRequest;
 import com.quyhoang.flexistudy.dto.request.UserCreationRequest;
 import com.quyhoang.flexistudy.dto.request.UserUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.UserResponse;
-import com.quyhoang.flexistudy.entity.Role;
-import com.quyhoang.flexistudy.entity.User;
+import com.quyhoang.flexistudy.entity.*;
 import com.quyhoang.flexistudy.enums.RoleName;
 import com.quyhoang.flexistudy.exception.AppException;
 import com.quyhoang.flexistudy.exception.ErrorCode;
 import com.quyhoang.flexistudy.mapper.UserMapper;
-import com.quyhoang.flexistudy.repository.RoleRepository;
-import com.quyhoang.flexistudy.repository.UserRepository;
+import com.quyhoang.flexistudy.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -28,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
@@ -48,6 +48,9 @@ public class UserService {
     RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    SkillRepository skillRepository;
+    EducationRepository educationRepository;
+    ExperienceRepository experienceRepository;
 
     @Value("${app.file.storage-dir}")
     @NonFinal
@@ -56,6 +59,28 @@ public class UserService {
     @Value("${app.file.download-prefix}")
     @NonFinal
     String urlPrefix;
+
+    @Transactional
+    public void register(RegisterRequest request) {
+        // Kiểm tra username đã tồn tại chưa
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername().trim());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        Set<Role> roleEntities = new HashSet<>();
+        roleRepository.findById(RoleName.USER).ifPresent(roleEntities::add);
+        user.setRoles(roleEntities);
+
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+    }
 
     public UserResponse createUser(UserCreationRequest request) {
         User user = userMapper.toUser(request);
@@ -209,5 +234,30 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public void addSkillsToUser(String userId, List<String> skillNames) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
+        Set<Skill> skills = skillNames.stream()
+                .map(name -> skillRepository.findByNameIgnoreCase(name.trim())
+                        .orElseGet(() -> skillRepository.save(
+                                Skill.builder().name(name.trim()).build()
+                        )))
+                .collect(Collectors.toSet());
+
+        user.setSkills(skills);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void removeSkillFromUser(String userId, String skillName) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        user.getSkills().removeIf(skill ->
+                skill.getName().equalsIgnoreCase(skillName));
+
+        userRepository.save(user);
+    }
 }

@@ -14,19 +14,17 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface JobMapper {
+
     Job toJob(JobCreationRequest req);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateJob(@MappingTarget Job job, JobUpdateRequest req);
 
-    // Map thẳng: company.name -> companyName
-    // requiredSkills (List<JobRequiredSkill>) -> (List<JobRequiredSkillResponse>) nhờ JobRequiredSkillMapper
-    @Mapping(target = "companyName",   source = "company.name")
-    @Mapping(target = "requiredSkills", source = "requiredSkills")
+    @Mapping(target = "companyName", source = "company.name")
     @Mapping(target = "companyLogoUrl", source = "company.logoUrl")
+    @Mapping(target = "requiredSkills", source = "requiredSkills")
     JobResponse toJobResponse(Job job);
 
-    // Đảm bảo không trả null list (tuỳ ý)
     @AfterMapping
     default void ensureListsNotNull(@MappingTarget JobResponse out) {
         if (out.getRequiredSkills() == null) {
@@ -34,3 +32,4 @@ public interface JobMapper {
         }
     }
 }
+

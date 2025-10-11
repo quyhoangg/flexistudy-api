@@ -1,30 +1,30 @@
 package com.quyhoang.flexistudy.controller;
 
+import com.quyhoang.flexistudy.dto.JobMatchResult;
 import com.quyhoang.flexistudy.dto.request.ApiResponse;
-import com.quyhoang.flexistudy.service.SkillService;
+import com.quyhoang.flexistudy.service.JobMatchingService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/skills")
+@RequestMapping("/jobs")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class SkillController {
+public class JobMatchingController {
 
-    SkillService skillService;
+    JobMatchingService jobMatchingService;
 
-    @GetMapping("/suggest")
-    public ApiResponse<List<String>> suggestSkills(@RequestParam String keyword) {
-        return ApiResponse.<List<String>>builder()
-                .result(skillService.suggestSkills(keyword))
-                .message("Gợi ý kỹ năng thành công")
+    @GetMapping("/match/{userId}")
+    public ApiResponse<List<JobMatchResult>> matchJobs(@PathVariable String userId) {
+        return ApiResponse.<List<JobMatchResult>>builder()
+                .result(jobMatchingService.findMatchingJobs(userId))
                 .build();
     }
 }

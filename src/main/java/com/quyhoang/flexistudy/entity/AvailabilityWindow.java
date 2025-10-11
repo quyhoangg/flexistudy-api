@@ -7,20 +7,20 @@ import lombok.experimental.FieldDefaults;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity
-public class JobShift {
+public class AvailabilityWindow {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_id", nullable = false)
-    Job job;
+    @JoinColumn(name = "user_id", nullable = false)
+    User user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 15)
@@ -32,6 +32,5 @@ public class JobShift {
     @Column(nullable = false)
     LocalTime endTime;
 
-    @Column(length = 255)
-    String description;
+    String note;
 }

@@ -19,7 +19,13 @@ import java.util.Set;
 public class JobResponse {
     String id;
     String title;
+
     String description;
+    String requirements;
+    String benefits;
+    String address;
+    LocalDateTime expiryDate;
+
     EmployeeType type;
     Integer minSalary;
     Integer maxSalary;
@@ -29,8 +35,10 @@ public class JobResponse {
     String city;
     JobStatus status;
     LocalDateTime postedAt;
+
     String companyName;
     String companyLogoUrl;
 
-    List<JobRequiredSkillResponse> requiredSkills;
+    List<SkillResponse> requiredSkills;
 }
+

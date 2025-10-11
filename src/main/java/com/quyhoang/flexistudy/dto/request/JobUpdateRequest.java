@@ -7,6 +7,7 @@ import com.quyhoang.flexistudy.enums.WorkMode;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -17,13 +18,19 @@ import java.util.Set;
 public class JobUpdateRequest {
     String title;
     String description;
+    String requirements;
+    String benefits;
+    String address;
+    LocalDateTime expiryDate;
+
     EmployeeType type;
     Integer minSalary;
-    JobCategory category;
     Integer maxSalary;
     String currency;
+    JobCategory category;
     WorkMode mode;
     String city;
     JobStatus status;
     Set<String> skillIds;
 }
+

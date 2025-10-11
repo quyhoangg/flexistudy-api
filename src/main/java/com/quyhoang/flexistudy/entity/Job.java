@@ -31,6 +31,16 @@ public class Job {
     @Column(columnDefinition = "TEXT")
     String description;
 
+    @Column(columnDefinition = "TEXT")
+    String requirements;
+
+    @Column(columnDefinition = "TEXT")
+    String benefits;
+
+    @Column(length = 255)
+    String address;
+
+    LocalDateTime expiryDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
@@ -63,11 +73,15 @@ public class Job {
     Company company;
 
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<JobShift> shifts = new ArrayList<>();
+    List<JobShift> jobShifts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    List<JobRequiredSkill> requiredSkills = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "job_required_skills",
+            joinColumns = @JoinColumn(name = "job_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id")
+    )
+    Set<Skill> requiredSkills = new HashSet<>();
 
     @ManyToMany(mappedBy = "savedJobs")
     private Set<User> savedByUsers = new HashSet<>();

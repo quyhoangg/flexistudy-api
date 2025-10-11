@@ -4,20 +4,26 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
+import java.util.UUID;
+
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Skill {
+@Table(name = "experiences")
+public class Experience {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
+    UUID id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    String name;
+    @Column(nullable = false)
+    String userId;
 
-    @Column(length = 100)
-    String category;
+    String company;
+    String position;
+    LocalDate startDate;
+    LocalDate endDate;
 }

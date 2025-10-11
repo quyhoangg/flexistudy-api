@@ -3,19 +3,19 @@ package com.quyhoang.flexistudy.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserSkillResponse {
+public class JobShiftResponse {
     String id;
-    String skillId;
-    String skillName;
-    BigDecimal level;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
+    String jobId;
+    DayOfWeek dayOfWeek;
+    LocalTime startTime;
+    LocalTime endTime;
+    String description;
 }

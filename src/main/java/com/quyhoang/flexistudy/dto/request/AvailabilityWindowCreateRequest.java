@@ -1,22 +1,29 @@
 package com.quyhoang.flexistudy.dto.request;
 
-import com.quyhoang.flexistudy.enums.SkillCategory;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SkillRequest {
-    @NotBlank
-    String name;
-
-    String description;
+public class AvailabilityWindowCreateRequest {
+    @NotNull
+    String userId;
 
     @NotNull
-    SkillCategory category;
+    DayOfWeek dayOfWeek;
+
+    @NotNull
+    LocalTime startTime;
+
+    @NotNull
+    LocalTime endTime;
+
+    String note;
 }
