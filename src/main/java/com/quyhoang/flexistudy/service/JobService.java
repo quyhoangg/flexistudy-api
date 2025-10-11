@@ -1,12 +1,13 @@
 package com.quyhoang.flexistudy.service;
 
+import com.quyhoang.flexistudy.dto.JobCategoryCount;
 import com.quyhoang.flexistudy.dto.PageResponse;
 import com.quyhoang.flexistudy.dto.request.JobCreationRequest;
 import com.quyhoang.flexistudy.dto.request.JobUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.JobResponse;
 import com.quyhoang.flexistudy.entity.Company;
 import com.quyhoang.flexistudy.entity.Job;
-import com.quyhoang.flexistudy.entity.JobRequiredSkill;
+import com.quyhoang.flexistudy.entity.Skill;
 import com.quyhoang.flexistudy.enums.JobStatus;
 import com.quyhoang.flexistudy.exception.AppException;
 import com.quyhoang.flexistudy.exception.ErrorCode;
@@ -26,8 +27,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -41,48 +46,62 @@ public class JobService {
 
     @Transactional
     public JobResponse createJob(JobCreationRequest req) {
-
-        Company c = companyRepository.findById(req.getCompanyId())
+        Company company = companyRepository.findById(req.getCompanyId())
                 .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
 
         Job job = jobMapper.toJob(req);
-        job.setCompany(c);
-        job.setRequiredSkills(new ArrayList<>());
+        job.setCompany(company);
+        job.setStatus(JobStatus.CLOSED);
 
-        job.setStatus(JobStatus.PENDING);
+        //  Nếu chưa có expiryDate → mặc định 30 ngày kể từ hôm nay
+        if (job.getExpiryDate() == null) {
+            job.setExpiryDate(LocalDateTime.now().plusDays(14));
+        }
+
+        if (job.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
 
         if (req.getSkillIds() != null && !req.getSkillIds().isEmpty()) {
-            var skills = skillRepository.findAllById(req.getSkillIds());
-            for (var s : skills) {
-                job.getRequiredSkills().add(
-                        JobRequiredSkill.builder()
-                                .job(job)
-                                .skill(s)
-                                .minLevel(1)
-                                .weight(new BigDecimal("1.000"))
-                                .build()
-                );
+            List<Skill> skills = skillRepository.findAllById(req.getSkillIds());
+            if (skills.size() != req.getSkillIds().size()) {
+                throw new AppException(ErrorCode.SKILL_NOT_FOUND);
             }
+            job.setRequiredSkills(new HashSet<>(skills));
+        } else {
+            job.setRequiredSkills(new HashSet<>());
         }
 
         Job saved = jobRepository.save(job);
         return jobMapper.toJobResponse(saved);
     }
 
-
-    public PageResponse<JobResponse> getAllJobs(int page, int size, String search) {
+    public PageResponse<JobResponse> getAllJobs(int page, int size, String search, String city, Boolean urgent) {
         Sort sort = Sort.by("postedAt").descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
 
+        LocalDateTime now = LocalDateTime.now();
         Page<Job> jobPage;
 
-        if (search != null && !search.trim().isEmpty()) {
-            // Tìm theo title hoặc tên công ty (không phân biệt hoa thường)
-            jobPage = jobRepository.findByTitleContainingIgnoreCaseOrCompany_NameContainingIgnoreCase(
-                    search, search, pageable
-            );
+        //  Nếu là "tuyển gấp" thì lấy job đăng trong 7 ngày và sắp hết hạn trong 3 ngày tới
+        if (Boolean.TRUE.equals(urgent)) {
+            LocalDateTime postedCutoff = now.minusDays(7);
+            LocalDateTime urgentDeadline = now.plusDays(3);
+            jobPage = jobRepository.findUrgentJobs(postedCutoff, urgentDeadline, pageable);
+
         } else {
-            jobPage = jobRepository.findAll(pageable);
+            //  Nếu không phải "tuyển gấp" → logic cũ (mới nhất, 30 ngày)
+            LocalDateTime cutoff = now.minusDays(30);
+
+            if (search != null && !search.trim().isEmpty() && city != null && !city.trim().isEmpty()) {
+                jobPage = jobRepository.searchActiveJobsByCity(search.trim(), city.trim(), cutoff, pageable);
+            } else if (city != null && !city.trim().isEmpty()) {
+                jobPage = jobRepository.findActiveJobsByCity(city.trim(), cutoff, pageable);
+            } else if (search != null && !search.trim().isEmpty()) {
+                jobPage = jobRepository.searchActiveJobs(search.trim(), cutoff, pageable);
+            } else {
+                jobPage = jobRepository.findActiveJobs(cutoff, pageable);
+            }
         }
 
         List<JobResponse> jobResponses = jobPage.getContent()
@@ -100,6 +119,8 @@ public class JobService {
     }
 
 
+
+
     public JobResponse getJobById(String id) {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
@@ -107,46 +128,30 @@ public class JobService {
     }
 
     @Transactional
-    public JobResponse updateJob(String id, JobUpdateRequest request) {
-        // Tìm job cần update
+    public JobResponse updateJob(String id, JobUpdateRequest req) {
+        // Tìm job cần cập nhật
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
 
-        //  Cập nhật các trường cơ bản
-        jobMapper.updateJob(job, request);
+        // Cập nhật các trường cơ bản
+        jobMapper.updateJob(job, req);
 
-        // Nếu có danh sách skill mới thì cập nhật
-        if (request.getSkillIds() != null) {
-            // Xóa hết các yêu cầu kỹ năng cũ
-            job.getRequiredSkills().clear();
+        // Nếu có danh sách kỹ năng mới → cập nhật lại
+        if (req.getSkillIds() != null) {
+            List<Skill> skills = skillRepository.findAllById(req.getSkillIds());
 
-            // Lấy skill theo ID
-            var skills = skillRepository.findAllById(request.getSkillIds());
-
-            // (Optional) Kiểm tra số lượng có khớp không
-            if (skills.size() != request.getSkillIds().size()) {
+            if (skills.size() != req.getSkillIds().size()) {
                 throw new AppException(ErrorCode.SKILL_NOT_FOUND);
             }
 
-            // Thêm lại danh sách kỹ năng yêu cầu mới
-            for (var s : skills) {
-                job.getRequiredSkills().add(
-                        JobRequiredSkill.builder()
-                                .job(job)
-                                .skill(s)
-                                .minLevel(1) // TODO: Cho chỉnh từ request nếu cần
-                                .weight(new BigDecimal("1.000"))
-                                .build()
-                );
-            }
+            job.setRequiredSkills(new HashSet<>(skills));
         }
 
-        // Lưu job một lần duy nhất
-        Job updatedJob = jobRepository.save(job);
-
-        //Trả về response
-        return jobMapper.toJobResponse(updatedJob);
+        // Lưu job
+        Job updated = jobRepository.save(job);
+        return jobMapper.toJobResponse(updated);
     }
+
 
     public void deleteJob(String id) {
         if (!jobRepository.existsById(id)) {
@@ -154,4 +159,46 @@ public class JobService {
         }
         jobRepository.deleteById(id);
     }
+
+    @Transactional
+    public Job addRequiredSkillsToJob(String jobId, List<String> skillNames) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
+
+        Set<Skill> skills = skillNames.stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(name -> skillRepository.findByNameIgnoreCase(name)
+                        .orElseGet(() -> skillRepository.save(
+                                Skill.builder().name(name).build()
+                        )))
+                .collect(Collectors.toSet());
+
+        job.getRequiredSkills().addAll(skills);
+        return jobRepository.save(job);
+    }
+
+    @Transactional
+    public void removeRequiredSkill(String jobId, String skillName) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
+
+        job.getRequiredSkills().removeIf(skill ->
+                skill.getName().equalsIgnoreCase(skillName));
+
+        jobRepository.save(job);
+    }
+
+    public List<JobCategoryCount> getJobCategoryCounts() {
+        List<Object[]> results = jobRepository.countJobsByCategory();
+
+        return results.stream()
+                .map(r -> new JobCategoryCount(
+                        r[0] != null ? r[0].toString() : "UNKNOWN",
+                        (Long) r[1]
+                ))
+                .toList();
+    }
+
 }
+

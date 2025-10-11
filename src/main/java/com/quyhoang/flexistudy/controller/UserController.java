@@ -1,9 +1,7 @@
 package com.quyhoang.flexistudy.controller;
 
 import com.quyhoang.flexistudy.dto.PageResponse;
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
-import com.quyhoang.flexistudy.dto.request.UserCreationRequest;
-import com.quyhoang.flexistudy.dto.request.UserUpdateRequest;
+import com.quyhoang.flexistudy.dto.request.*;
 import com.quyhoang.flexistudy.dto.response.UserResponse;
 import com.quyhoang.flexistudy.service.UserService;
 import jakarta.validation.Valid;
@@ -24,6 +22,14 @@ import java.util.List;
 @Slf4j
 public class UserController {
     UserService userService;
+
+    @PostMapping("/register")
+    public ApiResponse<Void> register(@Valid @RequestBody RegisterRequest request) {
+        userService.register(request);
+        return ApiResponse.<Void>builder()
+                .message("Đăng ký tài khoản thành công!")
+                .build();
+    }
 
     @PostMapping
     ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
@@ -85,6 +91,17 @@ public class UserController {
         String fileUrl = userService.uploadAvatar(userId, file);
         return ApiResponse.<String>builder()
                 .result(fileUrl)
+                .build();
+    }
+
+    @PostMapping("/skills/{userId}")
+    public ApiResponse<Void> addUserSkills(
+            @PathVariable String userId,
+            @RequestBody List<String> skills
+    ) {
+        userService.addSkillsToUser(userId, skills);
+        return ApiResponse.<Void>builder()
+                .message("Skills updated successfully")
                 .build();
     }
 }

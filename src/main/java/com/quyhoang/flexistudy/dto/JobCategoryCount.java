@@ -1,14 +1,14 @@
-package com.quyhoang.flexistudy.dto.response;
+package com.quyhoang.flexistudy.dto;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SkillResponse {
-    String id;
-    String name;
+public class JobCategoryCount {
+    String category;
+    Long count;
 }

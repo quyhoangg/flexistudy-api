@@ -1,5 +1,6 @@
 package com.quyhoang.flexistudy.controller;
 
+import com.quyhoang.flexistudy.dto.JobCategoryCount;
 import com.quyhoang.flexistudy.dto.PageResponse;
 import com.quyhoang.flexistudy.dto.request.ApiResponse;
 import com.quyhoang.flexistudy.dto.request.JobCreationRequest;
@@ -35,13 +36,17 @@ public class JobController {
     public ApiResponse<PageResponse<JobResponse>> getAllJobs(
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int size,
-            @RequestParam(value = "search", required = false) String search
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "city", required = false) String city,
+            @RequestParam(value = "urgent", required = false, defaultValue = "false") boolean urgent
     ) {
-        PageResponse<JobResponse> response = jobService.getAllJobs(page, size, search);
+        PageResponse<JobResponse> response = jobService.getAllJobs(page, size, search, city, urgent);
         return ApiResponse.<PageResponse<JobResponse>>builder()
                 .result(response)
                 .build();
     }
+
+
 
     @GetMapping("/{id}")
     ApiResponse<JobResponse> getJobById(@PathVariable String id) {
@@ -50,7 +55,7 @@ public class JobController {
                 .build();
     }
 
-    @PutMapping("/{id}") // hoặc @PatchMapping nếu bạn muốn semantics partial update
+    @PutMapping("/{id}")
     ApiResponse<JobResponse> updateJob(@PathVariable String id,
                                        @RequestBody @Valid JobUpdateRequest request) {
         return ApiResponse.<JobResponse>builder()
@@ -63,6 +68,24 @@ public class JobController {
         jobService.deleteJob(id);
         return ApiResponse.<String>builder()
                 .result("Job has been deleted")
+                .build();
+    }
+
+    @PostMapping("/{jobId}/skills")
+    public ApiResponse<Void> addJobSkills(
+            @PathVariable String jobId,
+            @RequestBody List<String> skills
+    ) {
+        jobService.addRequiredSkillsToJob(jobId, skills);
+        return ApiResponse.<Void>builder()
+                .message("Job skills updated successfully")
+                .build();
+    }
+
+    @GetMapping("/categories")
+    public ApiResponse<List<JobCategoryCount>> getJobCategories() {
+        return ApiResponse.<List<JobCategoryCount>>builder()
+                .result(jobService.getJobCategoryCounts())
                 .build();
     }
 }

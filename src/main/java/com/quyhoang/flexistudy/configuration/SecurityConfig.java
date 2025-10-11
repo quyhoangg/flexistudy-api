@@ -27,7 +27,7 @@ public class SecurityConfig {
             "/users", "/auth/token", "/auth/introspect", "/auth/logout",
             "/auth/refresh", "/media/download/**", "/users/**", "/uploads/**",
             "/companies/upload-logo/**", "/v3/api-docs/**", "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html", "/availability-windows/**"
     };
 
     @Autowired

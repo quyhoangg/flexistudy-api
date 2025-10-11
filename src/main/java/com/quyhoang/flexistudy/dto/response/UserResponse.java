@@ -22,5 +22,6 @@ public class UserResponse {
     String phone;
     String avatarUrl;
     LocalDate dob;
+    boolean profileCompleted;
     Set<RoleResponse> roles;
 }
