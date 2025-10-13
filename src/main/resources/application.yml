@@ -1,3 +1,8 @@
 spring:
   profiles:
     active: local
+cloudinary:
+  cloud-name: dh63gnk0e
+  api-key: 974261281333547
+  api-secret: USHY0AOsavjh3LdgM5GfNPiBPvw
+  upload-preset: uploads/

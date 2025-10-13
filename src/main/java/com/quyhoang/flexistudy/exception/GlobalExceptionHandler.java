@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Map;
 import java.util.Objects;
@@ -54,6 +55,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(errorCode.getStatusCode())
                 .body(response);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUpload(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.badRequest().body(
+                ApiResponse.<Void>builder()
+                        .code(400)
+                        .message("File vượt quá dung lượng tối đa (5MB). Vui lòng chọn file nhỏ hơn.")
+                        .build()
+        );
     }
 
     /**

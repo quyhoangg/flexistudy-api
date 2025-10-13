@@ -1,5 +1,6 @@
 package com.quyhoang.flexistudy.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -47,7 +48,9 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "job_id")
     )
+    @JsonIgnore
     private Set<Job> savedJobs = new HashSet<>();
+
 
     @ManyToMany
     @JoinTable(

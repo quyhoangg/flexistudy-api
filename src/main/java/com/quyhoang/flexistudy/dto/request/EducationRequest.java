@@ -1,17 +1,16 @@
 package com.quyhoang.flexistudy.dto.request;
 
-import com.quyhoang.flexistudy.enums.ApplicationStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.Instant;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ApplicationUpdateRequest {
-    ApplicationStatus status;
-    String note;
+public class EducationRequest {
+    String userId;
+    String school;
+    String degree;
+    String field;
 }

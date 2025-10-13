@@ -1,26 +1,17 @@
-package com.quyhoang.flexistudy.entity;
+package com.quyhoang.flexistudy.dto.response;
 
-import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.UUID;
 
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "educations")
-public class Education {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+public class EducationResponse {
     UUID id;
-
-    @Column(nullable = false)
-    String userId;
-
     String school;
     String degree;
     String field;

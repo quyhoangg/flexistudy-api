@@ -1,5 +1,6 @@
 package com.quyhoang.flexistudy.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.quyhoang.flexistudy.enums.EmployeeType;
 import com.quyhoang.flexistudy.enums.JobCategory;
 import com.quyhoang.flexistudy.enums.JobStatus;
@@ -9,10 +10,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Data
@@ -84,8 +82,29 @@ public class Job {
     Set<Skill> requiredSkills = new HashSet<>();
 
     @ManyToMany(mappedBy = "savedJobs")
+    @JsonIgnore
     private Set<User> savedByUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Application> applications = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        if (status == null) status = JobStatus.CLOSED;
+        if (postedAt == null) postedAt = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Job)) return false;
+        Job other = (Job) o;
+        return id != null && id.equals(other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

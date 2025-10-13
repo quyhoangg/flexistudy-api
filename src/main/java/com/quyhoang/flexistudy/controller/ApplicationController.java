@@ -7,10 +7,12 @@ import com.quyhoang.flexistudy.dto.response.ApplicationResponse;
 import com.quyhoang.flexistudy.entity.Application;
 import com.quyhoang.flexistudy.mapper.ApplicationMapper;
 import com.quyhoang.flexistudy.service.ApplicationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,15 +30,29 @@ public class ApplicationController {
         Application app = service.create(req);
         return ApiResponse.<ApplicationResponse>builder()
                 .result(mapper.toResponse(app))
+                .message("Application created successfully")
                 .build();
     }
 
+    @PreAuthorize("hasRole('RECRUITER')")
+    @GetMapping("/my-company")
+    public ApiResponse<List<ApplicationResponse>> getApplicationsForRecruiter(HttpServletRequest request) {
+        List<Application> apps = service.getApplicationsForRecruiter(request);
+        return ApiResponse.<List<ApplicationResponse>>builder()
+                .result(apps.stream().map(mapper::toResponse).toList())
+                .build();
+    }
+
+
     @PatchMapping("/{id}")
-    public ApiResponse<ApplicationResponse> updateStatus(@PathVariable String id,
-                                                         @Valid @RequestBody ApplicationUpdateRequest req) {
+    public ApiResponse<ApplicationResponse> updateStatus(
+            @PathVariable String id,
+            @Valid @RequestBody ApplicationUpdateRequest req
+    ) {
         Application app = service.updateStatus(id, req);
         return ApiResponse.<ApplicationResponse>builder()
                 .result(mapper.toResponse(app))
+                .message("Application updated successfully")
                 .build();
     }
 
@@ -47,10 +63,20 @@ public class ApplicationController {
                 .build();
     }
 
+    @GetMapping("/company/{companyId}")
+    public ApiResponse<List<ApplicationResponse>> getApplicationsByCompany(@PathVariable String companyId) {
+        List<Application> apps = service.getApplicationsByCompany(companyId);
+        return ApiResponse.<List<ApplicationResponse>>builder()
+                .result(apps.stream().map(mapper::toResponse).toList())
+                .build();
+    }
+
     @GetMapping("/user/{userId}")
     public ApiResponse<List<ApplicationResponse>> getByUser(@PathVariable String userId) {
         List<ApplicationResponse> list = service.getAllByUser(userId)
-                .stream().map(mapper::toResponse).toList();
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
 
         return ApiResponse.<List<ApplicationResponse>>builder()
                 .result(list)
@@ -60,7 +86,9 @@ public class ApplicationController {
     @GetMapping("/job/{jobId}")
     public ApiResponse<List<ApplicationResponse>> getByJob(@PathVariable String jobId) {
         List<ApplicationResponse> list = service.getAllByJob(jobId)
-                .stream().map(mapper::toResponse).toList();
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
 
         return ApiResponse.<List<ApplicationResponse>>builder()
                 .result(list)

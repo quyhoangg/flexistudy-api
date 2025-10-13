@@ -82,10 +82,14 @@ public class CompanyController {
     }
 
     @PostMapping("/upload-logo/{companyId}")
-    public ApiResponse<String> uploadLogo(@PathVariable String companyId,
-                                          @RequestParam("file") MultipartFile file) {
+    public ApiResponse<String> uploadLogo(
+            @PathVariable String companyId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        String fileUrl = companyService.uploadLogo(companyId, file);
         return ApiResponse.<String>builder()
-                .result(companyService.uploadCompanyLogo(companyId, file))
+                .result(fileUrl)
+                .message("Logo uploaded successfully")
                 .build();
     }
 }
