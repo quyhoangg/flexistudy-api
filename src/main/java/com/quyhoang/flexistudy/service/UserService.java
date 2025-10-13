@@ -45,7 +45,6 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     SkillRepository skillRepository;
-    CloudinaryService cloudinaryService;
     FileStorageService fileStorageService;
 
     @Transactional
@@ -213,15 +212,5 @@ public class UserService {
                 skill.getName().equalsIgnoreCase(skillName));
 
         userRepository.save(user);
-    }
-
-    public String uploadAvatarServer(String userId, MultipartFile file) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        String imageUrl = cloudinaryService.uploadImage(file);
-        user.setAvatarUrl(imageUrl);
-        userRepository.save(user);
-        return imageUrl;
     }
 }

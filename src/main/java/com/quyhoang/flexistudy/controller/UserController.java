@@ -105,13 +105,4 @@ public class UserController {
                 .message("Skills updated successfully")
                 .build();
     }
-
-    @PostMapping("/avatar/server/{userId}")
-    public ApiResponse<String> uploadAvatarServer(
-            @PathVariable String userId,
-            @RequestParam("file") MultipartFile file
-    ) {
-        String fileUrl = userService.uploadAvatar(userId, file);
-        return ApiResponse.<String>builder().result(fileUrl).build();
-    }
 }
