@@ -8,6 +8,7 @@ import com.quyhoang.flexistudy.dto.response.JobResponse;
 import com.quyhoang.flexistudy.entity.Company;
 import com.quyhoang.flexistudy.entity.Job;
 import com.quyhoang.flexistudy.entity.Skill;
+import com.quyhoang.flexistudy.enums.EmployeeType;
 import com.quyhoang.flexistudy.enums.JobStatus;
 import com.quyhoang.flexistudy.exception.AppException;
 import com.quyhoang.flexistudy.exception.ErrorCode;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -33,6 +35,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.quyhoang.flexistudy.service.JobSpecs.*;
 
 @Slf4j
 @Service
@@ -76,32 +80,38 @@ public class JobService {
         return jobMapper.toJobResponse(saved);
     }
 
-    public PageResponse<JobResponse> getAllJobs(int page, int size, String search, String city, Boolean urgent) {
+    public PageResponse<JobResponse> getAllJobs(
+            int page, int size,
+            String search,
+            String city,
+            Boolean urgent,
+            EmployeeType type,
+            Integer minSalary,
+            Integer maxSalary,
+            boolean isAdmin   // 👈 thêm flag
+    ) {
         Sort sort = Sort.by("postedAt").descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
 
         LocalDateTime now = LocalDateTime.now();
         Page<Job> jobPage;
 
-        //  Nếu là "tuyển gấp" thì lấy job đăng trong 7 ngày và sắp hết hạn trong 3 ngày tới
         if (Boolean.TRUE.equals(urgent)) {
             LocalDateTime postedCutoff = now.minusDays(7);
             LocalDateTime urgentDeadline = now.plusDays(3);
-            jobPage = jobRepository.findUrgentJobs(postedCutoff, urgentDeadline, pageable);
-
+            jobPage = jobRepository.findUrgentJobs(postedCutoff, urgentDeadline, city, pageable);
         } else {
-            //  Nếu không phải "tuyển gấp" → logic cũ (mới nhất, 30 ngày)
             LocalDateTime cutoff = now.minusDays(30);
 
-            if (search != null && !search.trim().isEmpty() && city != null && !city.trim().isEmpty()) {
-                jobPage = jobRepository.searchActiveJobsByCity(search.trim(), city.trim(), cutoff, pageable);
-            } else if (city != null && !city.trim().isEmpty()) {
-                jobPage = jobRepository.findActiveJobsByCity(city.trim(), cutoff, pageable);
-            } else if (search != null && !search.trim().isEmpty()) {
-                jobPage = jobRepository.searchActiveJobs(search.trim(), cutoff, pageable);
-            } else {
-                jobPage = jobRepository.findActiveJobs(cutoff, pageable);
-            }
+            Specification<Job> spec = Specification
+                    .where(isAdmin ? null : JobSpecs.statusOpen())
+                    .and(JobSpecs.postedSince(cutoff))
+                    .and(JobSpecs.matchesSearch(search))
+                    .and(JobSpecs.cityEquals(city))
+                    .and(JobSpecs.typeEquals(type))
+                    .and(JobSpecs.salaryBetween(minSalary, maxSalary));
+
+            jobPage = jobRepository.findAll(spec, pageable);
         }
 
         List<JobResponse> jobResponses = jobPage.getContent()
@@ -117,8 +127,6 @@ public class JobService {
                 .data(jobResponses)
                 .build();
     }
-
-
 
 
     public JobResponse getJobById(String id) {

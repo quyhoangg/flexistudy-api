@@ -11,7 +11,6 @@ import com.quyhoang.flexistudy.exception.AppException;
 import com.quyhoang.flexistudy.exception.ErrorCode;
 import com.quyhoang.flexistudy.mapper.CompanyMapper;
 import com.quyhoang.flexistudy.repository.CompanyRepository;
-import com.quyhoang.flexistudy.repository.JobRepository;
 import com.quyhoang.flexistudy.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +23,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @Slf4j
@@ -40,14 +36,7 @@ public class CompanyService {
     CompanyRepository companyRepository;
     CompanyMapper companyMapper;
     UserRepository userRepository;
-
-    @Value("${app.file.storage-dir}")
-    @NonFinal
-    String storageDir;
-
-    @Value("${app.file.download-prefix}")
-    @NonFinal
-    String urlPrefix;
+    FileStorageService fileStorageService;
 
     public CompanyResponse createCompany(CompanyCreationRequest request) {
         Company company = companyMapper.toCompany(request);
@@ -118,48 +107,26 @@ public class CompanyService {
         return companyMapper.toCompanyResponse(company);
     }
 
-    public String uploadCompanyLogo(String companyId, MultipartFile file) {
+    @Transactional
+    public String uploadLogo(String companyId, MultipartFile file) {
+        log.info("➡️ Upload logo for company {} | file={}", companyId, file == null ? "null" : file.getOriginalFilename());
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
 
-        try {
-            // 1) Tạo thư mục lưu trữ
-            Path uploadPath = Paths.get(storageDir, "company-logos");
-            Files.createDirectories(uploadPath);
-
-            // 2) Tạo tên file unique
-            String safeOriginal = (file.getOriginalFilename() == null) ? "unknown" : file.getOriginalFilename();
-            String filename = companyId + "_" + System.currentTimeMillis() + "_" + safeOriginal;
-            Path filePath = uploadPath.resolve(filename);
-
-            // 3) Ghi file mới (REPLACE_EXISTING cũng ok, nhưng tên đã unique)
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            // 4) Xoá logo cũ (nếu có) — KHÔNG để lỗi xoá làm hỏng tác vụ upload
-            String oldUrl = company.getLogoUrl();
-            if (oldUrl != null && !oldUrl.isBlank()) {
-                try {
-                    // Lấy đường dẫn từ URL (không có query)
-                    String oldPathPart = java.net.URI.create(oldUrl).getPath(); // vd: /static/company-logos/abc.png
-                    String oldFileName = Paths.get(oldPathPart).getFileName().toString();
-                    Path oldFilePath = Paths.get(storageDir, "company-logos", oldFileName);
-                    Files.deleteIfExists(oldFilePath);
-                } catch (Exception delEx) {
-                    // chỉ cảnh báo, không fail
-                    log.warn("Cannot delete old logo for company {}: {}", companyId, delEx.getMessage());
-                }
-            }
-            String fileUrl = (urlPrefix.endsWith("/"))
-                    ? (urlPrefix + "company-logos/" + filename)
-                    : (urlPrefix + "/company-logos/" + filename);
-
-            company.setLogoUrl(fileUrl);
-            companyRepository.save(company);
-
-            return fileUrl;
-        } catch (Exception e) {
-            throw new RuntimeException("Không thể upload logo công ty: " + e.getMessage(), e);
+        if (file == null || file.isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
         }
-    }
 
+        String newUrl = fileStorageService.uploadFile(file, "logos");
+
+        // Xoá file cũ (nếu có)
+        fileStorageService.deleteFile(company.getLogoUrl());
+
+        company.setLogoUrl(newUrl);
+        companyRepository.save(company);
+
+        log.info("✅ Updated company {} logo -> {}", companyId, newUrl);
+
+        return newUrl;
+    }
 }

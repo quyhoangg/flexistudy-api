@@ -1,17 +1,19 @@
 package com.quyhoang.flexistudy.dto.request;
 
-import com.quyhoang.flexistudy.enums.ApplicationStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ApplicationUpdateRequest {
-    ApplicationStatus status;
-    String note;
+public class ExperienceRequest {
+    String userId;
+    String company;
+    String position;
+    LocalDate startDate;
+    LocalDate endDate;
 }

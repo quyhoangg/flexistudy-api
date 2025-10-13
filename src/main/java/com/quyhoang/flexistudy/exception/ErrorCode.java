@@ -32,6 +32,8 @@ public enum ErrorCode {
     JOB_ALREADY_SAVED(1022, "Job saved already", HttpStatus.BAD_REQUEST),
     AVAILABILITY_NOT_FOUND(1023, "Availability not found", HttpStatus.NOT_FOUND),
     SHIFT_NOT_FOUND(1024, "Shift not found", HttpStatus.NOT_FOUND),
+    UPLOAD_FAILE(1025, "Upload file is faile", HttpStatus.BAD_REQUEST),
+    RECRUITER_NO_COMPANY(1026, "User haven't been assign a company", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

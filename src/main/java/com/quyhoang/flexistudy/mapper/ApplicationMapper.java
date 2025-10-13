@@ -11,6 +11,13 @@ public interface ApplicationMapper {
     @Mapping(target = "userFullName", expression = "java(mapFullName(entity))")
     @Mapping(target = "jobId", source = "job.id")
     @Mapping(target = "jobTitle", source = "job.title")
+    @Mapping(target = "jobLogoUrl", source = "job.company.logoUrl")
+    @Mapping(target = "companyName", source = "company.name")
+    @Mapping(target = "city", source = "job.city")
+    @Mapping(target = "postedAt", source = "job.postedAt")
+    @Mapping(target = "type", source = "job.type")
+    @Mapping(target = "minSalary", source = "job.minSalary")
+    @Mapping(target = "maxSalary", source = "job.maxSalary")
     ApplicationResponse toResponse(Application entity);
 
     default String mapFullName(Application entity) {

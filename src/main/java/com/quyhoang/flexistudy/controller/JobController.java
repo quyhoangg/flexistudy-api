@@ -6,6 +6,7 @@ import com.quyhoang.flexistudy.dto.request.ApiResponse;
 import com.quyhoang.flexistudy.dto.request.JobCreationRequest;
 import com.quyhoang.flexistudy.dto.request.JobUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.JobResponse;
+import com.quyhoang.flexistudy.enums.EmployeeType;
 import com.quyhoang.flexistudy.service.JobService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -26,25 +27,45 @@ public class JobController {
 
     @PostMapping
     ApiResponse<JobResponse> createJob(@RequestBody  JobCreationRequest request) {
-        System.out.println("📨 Received createJob request");
         return ApiResponse.<JobResponse>builder()
                 .result(jobService.createJob(request))
                 .build();
     }
 
     @GetMapping
-    public ApiResponse<PageResponse<JobResponse>> getAllJobs(
-            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-            @RequestParam(value = "size", required = false, defaultValue = "10") int size,
-            @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "city", required = false) String city,
-            @RequestParam(value = "urgent", required = false, defaultValue = "false") boolean urgent
+    public ApiResponse<PageResponse<JobResponse>> getAllJobsForUser(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String city,
+            @RequestParam(defaultValue = "false") boolean urgent,
+            @RequestParam(required = false) EmployeeType type,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) Integer maxSalary
     ) {
-        PageResponse<JobResponse> response = jobService.getAllJobs(page, size, search, city, urgent);
-        return ApiResponse.<PageResponse<JobResponse>>builder()
-                .result(response)
-                .build();
+        PageResponse<JobResponse> response = jobService.getAllJobs(
+                page, size, search, city, urgent, type, minSalary, maxSalary, false
+        );
+        return ApiResponse.<PageResponse<JobResponse>>builder().result(response).build();
     }
+
+    @GetMapping("/admin")
+    public ApiResponse<PageResponse<JobResponse>> getAllJobsForAdmin(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String city,
+            @RequestParam(defaultValue = "false") boolean urgent,
+            @RequestParam(required = false) EmployeeType type,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) Integer maxSalary
+    ) {
+        PageResponse<JobResponse> response = jobService.getAllJobs(
+                page, size, search, city, urgent, type, minSalary, maxSalary, true
+        );
+        return ApiResponse.<PageResponse<JobResponse>>builder().result(response).build();
+    }
+
 
 
 

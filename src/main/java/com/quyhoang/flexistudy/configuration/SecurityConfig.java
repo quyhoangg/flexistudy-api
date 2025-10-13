@@ -27,11 +27,11 @@ public class SecurityConfig {
             "/users", "/auth/token", "/auth/introspect", "/auth/logout",
             "/auth/refresh", "/media/download/**", "/users/**", "/uploads/**",
             "/companies/upload-logo/**", "/v3/api-docs/**", "/swagger-ui/**",
-            "/swagger-ui.html", "/availability-windows/**"
+            "/swagger-ui.html", "/availability-windows/**", "/jobs/**"
     };
 
     @Autowired
-    private CustomJwtDecoder customJwtDecoder;
+        private CustomJwtDecoder customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

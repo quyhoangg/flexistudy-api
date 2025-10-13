@@ -4,6 +4,7 @@ import com.quyhoang.flexistudy.entity.Job;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface JobRepository extends JpaRepository<Job, String> {
+public interface JobRepository extends JpaRepository<Job, String>, JpaSpecificationExecutor<Job> {
 
     Page<Job> findByTitleContainingIgnoreCaseOrCompany_NameContainingIgnoreCase(
             String titleKeyword,
@@ -34,15 +35,18 @@ public interface JobRepository extends JpaRepository<Job, String> {
                                    Pageable pageable);
 
     @Query("""
-        SELECT j
-        FROM Job j
-        WHERE j.postedAt >= :postedCutoff
-          AND j.expiryDate <= :urgentDeadline
-        ORDER BY j.postedAt DESC
-        """)
+          SELECT j FROM Job j
+          WHERE j.status = com.quyhoang.flexistudy.enums.JobStatus.OPEN
+            AND j.postedAt >= :postedCutoff
+            AND j.expiryDate <= :urgentDeadline
+            AND (:city IS NULL OR LOWER(j.city) LIKE LOWER(CONCAT('%', :city, '%')))
+          ORDER BY j.postedAt DESC
+""")
     Page<Job> findUrgentJobs(@Param("postedCutoff") LocalDateTime postedCutoff,
                              @Param("urgentDeadline") LocalDateTime urgentDeadline,
+                             @Param("city") String city,
                              Pageable pageable);
+
 
 
     @Query("""

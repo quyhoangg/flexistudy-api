@@ -30,10 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,16 +45,8 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     SkillRepository skillRepository;
-    EducationRepository educationRepository;
-    ExperienceRepository experienceRepository;
-
-    @Value("${app.file.storage-dir}")
-    @NonFinal
-    String storageDir;
-
-    @Value("${app.file.download-prefix}")
-    @NonFinal
-    String urlPrefix;
+    CloudinaryService cloudinaryService;
+    FileStorageService fileStorageService;
 
     @Transactional
     public void register(RegisterRequest request) {
@@ -189,49 +177,15 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        if (file == null || file.isEmpty()) {
-            throw new AppException(ErrorCode.INVALID_REQUEST);
-        }
+        String newUrl = fileStorageService.uploadFile(file, "avatars");
 
-        try {
-            // 1) Tạo thư mục lưu trữ avatar
-            Path uploadPath = Paths.get(storageDir, "avatars");
-            Files.createDirectories(uploadPath);
+        // Xoá avatar cũ nếu có
+        fileStorageService.deleteFile(user.getAvatarUrl());
 
-            // 2) Tạo tên file unique, tránh null filename
-            String safeOriginal = (file.getOriginalFilename() == null) ? "unknown" : file.getOriginalFilename();
-            String filename = userId + "_" + System.currentTimeMillis() + "_" + safeOriginal;
-            Path filePath = uploadPath.resolve(filename);
+        user.setAvatarUrl(newUrl);
+        userRepository.save(user);
 
-            // 3) Ghi file mới (ghi đè nếu trùng tên)
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            // 4) Xoá avatar cũ (nếu có), KHÔNG để lỗi xoá làm fail
-            String oldUrl = user.getAvatarUrl();
-            if (oldUrl != null && !oldUrl.isBlank()) {
-                try {
-                    String oldPathPart = java.net.URI.create(oldUrl).getPath();
-                    String oldFileName = Paths.get(oldPathPart).getFileName().toString();
-                    Path oldFilePath = Paths.get(storageDir, "avatars", oldFileName);
-                    Files.deleteIfExists(oldFilePath);
-                } catch (Exception delEx) {
-                    log.warn("Cannot delete old avatar for user {}: {}", userId, delEx.getMessage());
-                }
-            }
-
-            // 5) Tạo URL public trả về (dùng urlPrefix giống như logo)
-            String fileUrl = (urlPrefix.endsWith("/"))
-                    ? (urlPrefix + "avatars/" + filename)
-                    : (urlPrefix + "/avatars/" + filename);
-
-            user.setAvatarUrl(fileUrl);
-            userRepository.save(user);
-
-            return fileUrl;
-        } catch (Exception e) {
-            log.error("Không thể upload avatar cho user {}: {}", userId, e.getMessage(), e);
-            throw new RuntimeException("Không thể upload avatar: " + e.getMessage(), e);
-        }
+        return newUrl;
     }
 
     @Transactional
@@ -259,5 +213,15 @@ public class UserService {
                 skill.getName().equalsIgnoreCase(skillName));
 
         userRepository.save(user);
+    }
+
+    public String uploadAvatarServer(String userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        String imageUrl = cloudinaryService.uploadImage(file);
+        user.setAvatarUrl(imageUrl);
+        userRepository.save(user);
+        return imageUrl;
     }
 }

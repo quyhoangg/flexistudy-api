@@ -13,11 +13,27 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApplicationResponse {
     String id;
-    String userId;
-    String userFullName;
     String jobId;
     String jobTitle;
+    String companyName;
+    String userFullName;
+    String jobLogoUrl;
+    String city;
+    String postedAt;
+    String type;
+    Integer minSalary;
+    Integer maxSalary;
+
+    String userId;
+    String fullName;
+    String email;
+    String phone;
+
+    String cvUrl;
+    String coverLetter;
+
     ApplicationStatus status;
-    String note;
     Instant appliedAt;
+    Instant updatedAt;
+    String note;
 }
