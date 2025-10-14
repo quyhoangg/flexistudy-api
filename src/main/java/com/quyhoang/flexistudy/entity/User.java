@@ -34,13 +34,17 @@ public class User {
     String phone;
     String avatarUrl;
     LocalDate dob;
+    @Column(unique = true)
+    String googleSub;
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    LocalDateTime createdAt;
     @Column(nullable = false)
     boolean profileCompleted = false;
     @ManyToMany
     Set<Role> roles;
+    String fullName;
+    String provider;
 
     @ManyToMany
     @JoinTable(

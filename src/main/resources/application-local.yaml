@@ -10,7 +10,7 @@ spring:
       max-request-size: 10MB
 
   datasource:
-    url: "jdbc:mysql://localhost:3306/identity_service"
+    url: jdbc:mysql://localhost:3306/identity_service
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -20,10 +20,16 @@ spring:
       ddl-auto: update
     show-sql: true
 
+outbound:
+  identity:
+    client-id: "87012092113-95t28ojtick2u8rff9cijv8r87i9sp46.apps.googleusercontent.com"
+    client-secret: "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"
+    redirect-uri: "http://localhost:3000/authenticate"
+
 jwt:
-  signerKey: "QArxkDscJw8ogDUNNKhwlvtbLR96CtEIgDbUzkkeN+iqXg6ucLvwU/LPkDVxHpzM"
-  valid-Duration: 3600 # in seconds
-  refreshable-duration: 360000 # in seconds
+  signer-key: "QArxkDscJw8ogDUNNKhwlvtbLR96CtEIgDbUzkkeN+iqXg6ucLvwU/LPkDVxHpzM"
+  valid-duration: 3600
+  refreshable-duration: 360000
 
 springdoc:
   swagger-ui:
@@ -33,3 +39,10 @@ app:
   file:
     storage-dir: C:/upload
     download-prefix: http://localhost:8080/api/v1/uploads
+
+logging:
+  level:
+    com.quyhoang.flexistudy.client.OutboundIdentityClient: DEBUG
+    org.springframework.web: DEBUG
+    feign: DEBUG
+

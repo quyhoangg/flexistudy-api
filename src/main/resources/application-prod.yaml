@@ -20,13 +20,20 @@ spring:
     show-sql: true
 
 jwt:
-  signerKey: "QArxkDscJw8ogDUNNKhwlvtbLR96CtEIgDbUzkkeN+iqXg6ucLvwU/LPkDVxHpzM"
-  valid-Duration: 3600 # in second
-  refreshable-duration: 360000 # in second
+  signer-key: "QArxkDscJw8ogDUNNKhwlvtbLR96CtEIgDbUzkkeN+iqXg6ucLvwU/LPkDVxHpzM"
+  valid-duration: 3600
+  refreshable-duration: 360000
 
 springdoc:
   swagger-ui:
     enabled: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    com.quyhoang.flexistudy: DEBUG
+
 
 
 
