@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
+
     User toUser(UserCreationRequest request);
 
     @Mapping(target = "roles", source = "roles")

@@ -18,7 +18,7 @@ import java.util.Objects;
 
 @Component
 public class CustomJwtDecoder implements JwtDecoder {
-    @Value("${jwt.signerKey}")
+    @Value("${jwt.signer-key}")
     private String signerKey;
 
     @Autowired
@@ -29,15 +29,21 @@ public class CustomJwtDecoder implements JwtDecoder {
     @Override
     public Jwt decode(String token) throws JwtException {
 
+        // Bỏ qua Google token (ya29...)
+        if (token.startsWith("ya29.")) {
+            throw new JwtException("Google access token - skip local JWT decode");
+        }
+
         try {
             var response = authenticationService.introspect(IntrospectRequest.builder()
                     .token(token)
                     .build());
 
-            if (!response.isValid())
+            if (!response.isValid()) {
                 throw new JwtException("Token invalid");
+            }
         } catch (JOSEException | ParseException e) {
-            throw new JwtException(e.getMessage());
+            throw new JwtException("Token introspection failed: " + e.getMessage());
         }
 
         if (Objects.isNull(nimbusJwtDecoder)) {
