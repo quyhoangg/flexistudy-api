@@ -18,10 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,9 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -41,6 +36,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
+
     UserRepository userRepository;
     RoleRepository roleRepository;
     UserMapper userMapper;
@@ -49,10 +45,8 @@ public class UserService {
     FileStorageService fileStorageService;
     AuthenticationService authenticationService;
 
-
     @Transactional
     public void register(RegisterRequest request) {
-        // Kiểm tra username đã tồn tại chưa
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
@@ -62,11 +56,11 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Set<Role> roleEntities = new HashSet<>();
-        roleRepository.findById(RoleName.USER).ifPresent(roleEntities::add);
+        roleRepository.findByName(RoleName.USER).ifPresent(roleEntities::add);
         user.setRoles(roleEntities);
 
         try {
-            user = userRepository.save(user);
+            userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
@@ -85,7 +79,6 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
 
-        // ✅ Sinh token mới để frontend dùng tiếp
         String token = authenticationService.generateToken(user);
 
         return AuthenticationResponse.builder()
@@ -100,35 +93,41 @@ public class UserService {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        Set<Role> roleEntities;
+        Set<Role> roleEntities = new HashSet<>();
+
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
-            roleEntities = request.getRoles().stream()
-                    .map(roleName -> roleRepository.findById(roleName)
-                            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND)))
-                    .collect(Collectors.toSet());
+            // Dùng trực tiếp danh sách enum từ request
+            List<RoleName> roleNames = request.getRoles();
+
+            roleEntities = new HashSet<>(roleRepository.findByNameIn(roleNames));
+
+            if (roleEntities.isEmpty()) {
+                throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+            }
+
         } else {
-            roleEntities = new HashSet<>();
-            roleRepository.findById(RoleName.USER).ifPresent(roleEntities::add);
+            // Nếu không truyền roles → mặc định USER
+            roleRepository.findByName(RoleName.USER).ifPresent(roleEntities::add);
         }
 
         user.setRoles(roleEntities);
 
         try {
             user = userRepository.save(user);
-        } catch (DataIntegrityViolationException exception){
+        } catch (DataIntegrityViolationException exception) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
 
         return userMapper.toUserResponse(user);
     }
 
+
     public UserResponse getMyInfor() {
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
 
-        User user = userRepository.findByUsername(name).orElseThrow(
-                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
-        );
+        User user = userRepository.findByUsername(name)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var userResponse = userMapper.toUserResponse(user);
         userResponse.setNoPassword(!StringUtils.hasText(user.getPassword()));
@@ -145,16 +144,13 @@ public class UserService {
 
         Page<User> userPage;
 
-        // Ưu tiên: nếu username hoặc email được truyền riêng → lọc tương ứng
         if (username != null && !username.isBlank()) {
             userPage = userRepository.findByUsernameContainingIgnoreCase(username, pageable);
         } else if (email != null && !email.isBlank()) {
             userPage = userRepository.findByEmailContainingIgnoreCase(email, pageable);
         } else if (search != null && !search.isBlank()) {
-            // Lọc theo search chung (username hoặc email)
             userPage = userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(search, search, pageable);
         } else {
-            // Không có filter → lấy tất cả
             userPage = userRepository.findAll(pageable);
         }
 
@@ -171,7 +167,6 @@ public class UserService {
                 .data(userResponses)
                 .build();
     }
-
 
     @PostAuthorize("returnObject.username == authentication.name")
     public UserResponse getUserById(String id) {
@@ -190,13 +185,18 @@ public class UserService {
         }
 
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
-            Set<Role> roles = new HashSet<>(roleRepository.findAllById(request.getRoles()));
+            List<RoleName> roleNames = request.getRoles();
+
+            Set<Role> roles = new HashSet<>(roleRepository.findByNameIn(roleNames));
+            if (roles.isEmpty()) {
+                throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+            }
+
             user.setRoles(roles);
         }
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
-
 
 
     public void deleteUserById(String userId) {
@@ -208,8 +208,6 @@ public class UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         String newUrl = fileStorageService.uploadFile(file, "avatars");
-
-        // Xoá avatar cũ nếu có
         fileStorageService.deleteFile(user.getAvatarUrl());
 
         user.setAvatarUrl(newUrl);
@@ -244,5 +242,4 @@ public class UserService {
 
         userRepository.save(user);
     }
-
 }

@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -28,7 +29,7 @@ public class UserCreationRequest {
     String address;
     String phone;
     String avatarUrl;
-    Set<RoleName> roles;
+    List<RoleName> roles;
 
     @DobConstraint(min = 12, message = "INVALID_DOB")
     LocalDate dob;

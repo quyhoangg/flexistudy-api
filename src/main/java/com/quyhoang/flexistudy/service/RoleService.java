@@ -39,7 +39,7 @@ public class RoleService {
         return roles.stream().map(roleMapper::toRoleResponse).toList();
     }
 
-    public void delete(RoleName role) {
-        roleRepository.deleteById(role);
+    public void delete(RoleName roleName) {
+        roleRepository.deleteByName(roleName);
     }
 }
