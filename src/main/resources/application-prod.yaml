@@ -37,7 +37,7 @@ outbound:
     redirect-uri: "http://localhost:3000/authenticate"
 
 jwt:
-  signer-key: ${SIGNER_KEY}
+  signer-key: QArxkDscJw8ogDUNNKhwlvtbLR96CtEIgDbUzkkeN+iqXg6ucLvwU/LPkDVxHpzM
   valid-duration: 3600
   refreshable-duration: 360000
 
