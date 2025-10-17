@@ -1,7 +1,7 @@
 package com.quyhoang.flexistudy.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.dto.response.UserResponse;
 import com.quyhoang.flexistudy.exception.ErrorCode;
 import jakarta.servlet.ServletException;

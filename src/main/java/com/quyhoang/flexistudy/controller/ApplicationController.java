@@ -1,6 +1,6 @@
 package com.quyhoang.flexistudy.controller;
 
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.dto.request.ApplicationCreateRequest;
 import com.quyhoang.flexistudy.dto.request.ApplicationUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.ApplicationResponse;

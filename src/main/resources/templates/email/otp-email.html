@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Xác nhận đăng nhập FlexiStudy</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f5f7fb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            background: #ffffff;
+            margin: 40px auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 32px;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            width: 120px;
+        }
+        .title {
+            text-align: center;
+            color: #0b2347;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .otp-box {
+            background: linear-gradient(135deg, #0b2347, #1a3b7b);
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            text-align: center;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 25px 0;
+        }
+        .message {
+            text-align: center;
+            color: #333;
+            font-size: 15px;
+        }
+        .cta {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .cta a {
+            background-color: #0b2347;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .footer {
+            text-align: center;
+            color: #777;
+            font-size: 12px;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <img class="logo" src="https://i.ibb.co/hBwjZyL/flexistudy-logo.png" alt="FlexiStudy Logo" />
+    <h2 class="title">Mã xác nhận đăng nhập</h2>
+
+    <div class="otp-box" th:text="${otp}">123456</div>
+
+    <p class="message">Vui lòng sử dụng mã này để xác nhận đăng nhập vào hệ thống FlexiStudy. Mã có hiệu lực trong 10 phút.</p>
+
+    <div class="cta">
+        <a th:href="${verifyLink}" target="_blank">Xác nhận ngay</a>
+    </div>
+
+    <p class="footer">Nếu bạn không thực hiện hành động này, vui lòng bỏ qua email này.<br/>© FlexiStudy Team</p>
+</div>
+</body>
+</html>

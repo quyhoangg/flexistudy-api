@@ -1,7 +1,7 @@
 package com.quyhoang.flexistudy.controller;
 
 import com.quyhoang.flexistudy.dto.JobMatchResult;
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.service.JobMatchingService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

@@ -27,7 +27,11 @@ public class SecurityConfig {
             "/users", "/auth/token", "/auth/introspect", "/auth/logout",
             "/auth/refresh", "/media/download/**", "/users/**", "/uploads/**",
             "/companies/upload-logo/**", "/v3/api-docs/**", "/swagger-ui/**",
-            "/swagger-ui.html", "/availability-windows/**", "/jobs/**", "/auth/outbound/authentication"
+            "/swagger-ui.html", "/availability-windows/**", "/jobs/**", "/auth/outbound/authentication",
+            "/test/send-otp", "/test/welcome", "/test/forgot-password", "/auth/verify-otp",
+            "/auth/forgot-password",
+            "/auth/verify-forgot-otp",
+            "/auth/reset-password"
     };
 
     @Autowired

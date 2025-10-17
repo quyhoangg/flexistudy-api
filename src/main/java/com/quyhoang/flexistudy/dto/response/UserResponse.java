@@ -22,6 +22,7 @@ public class UserResponse {
     String phone;
     String avatarUrl;
     LocalDate dob;
+    boolean noPassword;
     boolean profileCompleted;
     Set<RoleResponse> roles;
 }

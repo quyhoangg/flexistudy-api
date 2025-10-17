@@ -1,7 +1,7 @@
 package com.quyhoang.flexistudy.controller;
 
 import com.quyhoang.flexistudy.configuration.JwtUtils;
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.dto.response.JobResponse;
 import com.quyhoang.flexistudy.service.SavedJobService;
 import jakarta.servlet.http.HttpServletRequest;

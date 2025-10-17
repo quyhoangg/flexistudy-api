@@ -21,6 +21,46 @@ public interface JobRepository extends JpaRepository<Job, String>, JpaSpecificat
             Pageable pageable
     );
 
+    @Query("""
+    SELECT j FROM Job j
+    WHERE j.category = :category
+      AND j.status = com.quyhoang.flexistudy.enums.JobStatus.OPEN
+      AND j.postedAt >= :postedCutoff
+      AND j.expiryDate <= :urgentDeadline
+      AND (:city IS NULL OR LOWER(j.city) LIKE LOWER(CONCAT('%', :city, '%')))
+    ORDER BY j.postedAt DESC
+""")
+    Page<Job> findUrgentJobsByCategory(@Param("category") com.quyhoang.flexistudy.enums.JobCategory category,
+                                       @Param("postedCutoff") LocalDateTime postedCutoff,
+                                       @Param("urgentDeadline") LocalDateTime urgentDeadline,
+                                       @Param("city") String city,
+                                       Pageable pageable);
+
+
+
+    @Query("""
+    SELECT j FROM Job j
+    WHERE j.category = :category
+      AND j.status = com.quyhoang.flexistudy.enums.JobStatus.OPEN
+      AND j.postedAt >= :cutoff
+      AND (:search IS NULL OR LOWER(j.title) LIKE LOWER(CONCAT('%', :search, '%'))
+           OR LOWER(j.company.name) LIKE LOWER(CONCAT('%', :search, '%')))
+      AND (:city IS NULL OR LOWER(j.city) LIKE LOWER(CONCAT('%', :city, '%')))
+      AND (:type IS NULL OR j.type = :type)
+      AND (:minSalary IS NULL OR j.minSalary >= :minSalary)
+      AND (:maxSalary IS NULL OR j.maxSalary <= :maxSalary)
+    ORDER BY j.postedAt DESC
+""")
+    Page<Job> findJobsByCategoryFilter(@Param("category") com.quyhoang.flexistudy.enums.JobCategory category,
+                                       @Param("search") String search,
+                                       @Param("city") String city,
+                                       @Param("type") com.quyhoang.flexistudy.enums.EmployeeType type,
+                                       @Param("minSalary") Integer minSalary,
+                                       @Param("maxSalary") Integer maxSalary,
+                                       @Param("cutoff") LocalDateTime cutoff,
+                                       Pageable pageable);
+
+
 
 
     @Query("""

@@ -1,7 +1,7 @@
 package com.quyhoang.flexistudy.controller;
 
 import com.quyhoang.flexistudy.configuration.SecurityUtils;
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.dto.request.ProfileUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.ProfileResponse;
 import com.quyhoang.flexistudy.service.ProfileService;

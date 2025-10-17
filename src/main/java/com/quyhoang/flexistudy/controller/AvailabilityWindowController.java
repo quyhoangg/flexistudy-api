@@ -1,6 +1,6 @@
 package com.quyhoang.flexistudy.controller;
 
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.dto.request.AvailabilityWindowCreateRequest;
 import com.quyhoang.flexistudy.dto.request.AvailabilityWindowUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.AvailabilityWindowResponse;

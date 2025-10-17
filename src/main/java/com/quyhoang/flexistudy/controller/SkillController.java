@@ -1,6 +1,6 @@
 package com.quyhoang.flexistudy.controller;
 
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.service.SkillService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

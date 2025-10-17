@@ -8,6 +8,17 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: mausuper202@gmail.com
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   datasource:
     url: jdbc:mysql://localhost:3306/identity_service
@@ -23,11 +34,11 @@ spring:
 outbound:
   identity:
     client-id: "87012092113-95t28ojtick2u8rff9cijv8r87i9sp46.apps.googleusercontent.com"
-    client-secret: "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"
+    client-secret: ${CLIENT_SECRET}
     redirect-uri: "http://localhost:3000/authenticate"
 
 jwt:
-  signer-key: "QArxkDscJw8ogDUNNKhwlvtbLR96CtEIgDbUzkkeN+iqXg6ucLvwU/LPkDVxHpzM"
+  signer-key: ${SIGNER_KEY}
   valid-duration: 3600
   refreshable-duration: 360000
 
@@ -40,9 +51,4 @@ app:
     storage-dir: C:/upload
     download-prefix: http://localhost:8080/api/v1/uploads
 
-logging:
-  level:
-    com.quyhoang.flexistudy.client.OutboundIdentityClient: DEBUG
-    org.springframework.web: DEBUG
-    feign: DEBUG
 

@@ -9,12 +9,18 @@ import com.quyhoang.flexistudy.dto.request.*;
 import com.quyhoang.flexistudy.dto.response.AuthenticationResponse;
 import com.quyhoang.flexistudy.dto.response.IntrospectResponse;
 import com.quyhoang.flexistudy.entity.InvalidatedToken;
+import com.quyhoang.flexistudy.entity.Role;
 import com.quyhoang.flexistudy.entity.User;
+import com.quyhoang.flexistudy.entity.VerificationCode;
+import com.quyhoang.flexistudy.enums.RoleName;
 import com.quyhoang.flexistudy.exception.AppException;
 import com.quyhoang.flexistudy.exception.ErrorCode;
 import com.quyhoang.flexistudy.mapper.UserMapper;
 import com.quyhoang.flexistudy.repository.InvalidatedTokenRepository;
+import com.quyhoang.flexistudy.repository.RoleRepository;
 import com.quyhoang.flexistudy.repository.UserRepository;
+import com.quyhoang.flexistudy.repository.VerificationCodeRepository;
+import com.quyhoang.flexistudy.repository.httpClient.OutboundIdentityClient;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -22,6 +28,7 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -29,16 +36,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.Map;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -47,10 +53,12 @@ import java.util.UUID;
 public class AuthenticationService {
     UserRepository userRepository;
     OutboundIdentityClient outboundIdentityClient;
-    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
     InvalidatedTokenRepository  invalidatedTokenRepository;
-    UserMapper userMapper;
+    EmailService emailService;
+    VerificationCodeRepository verificationCodeRepository;
+    PasswordEncoder passwordEncoder;
+    RoleRepository roleRepository;
+
 
     @Value("${jwt.signer-key}")
     @NonFinal
@@ -93,7 +101,7 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse outboundAuthenticate(String code) {
-        // 1️⃣ Đổi code -> Google access token
+        // 1️⃣ Đổi code -> access token từ Google
         var response = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
                 .code(code)
                 .clientId(CLIENT_ID)
@@ -101,11 +109,10 @@ public class AuthenticationService {
                 .redirectUri(REDIRECT_URI)
                 .grantType(GRANT_TYPE)
                 .build());
-        log.info("GOOGLE TOKEN RESPONSE {}", response);
 
         String googleAccessToken = response.getAccessToken();
 
-        // 2️⃣ Lấy thông tin user từ Google
+        // 2️⃣ Lấy user info từ Google
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(googleAccessToken);
@@ -126,28 +133,161 @@ public class AuthenticationService {
 
         log.info("GOOGLE USER INFO: {}", userInfo);
 
-        // 3️⃣ Tìm hoặc tạo user
+        // 3️⃣ Tìm hoặc tạo user mới
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            // 👉 Lấy ROLE_USER mặc định
+            Role defaultRole = roleRepository.findByName(RoleName.USER)
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+            // 👉 Tách họ và tên (optional, tránh null)
+            String firstName = "";
+            String lastName = "";
+            if (fullName != null && fullName.contains(" ")) {
+                String[] parts = fullName.trim().split(" ", 2);
+                firstName = parts[0];
+                lastName = parts.length > 1 ? parts[1] : "";
+            }
+
+            try {
+                user = User.builder()
+                        .email(email)
+                        .fullName(fullName)
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .avatarUrl(avatar)
+                        .googleSub(googleSub)
+                        .provider("GOOGLE") // chuẩn hóa viết hoa
+                        .username(email)
+                        .emailVerified(false)
+                        .roles(Set.of(defaultRole)) // Gán role mặc định
+                        .password(null)
+                        .build();
+
+                userRepository.save(user);
+                log.info("✅ New Google user created with ROLE_USER: {}", email);
+            } catch (DataIntegrityViolationException e) {
+                log.warn("⚠ Duplicate email detected, fallback to existing user record.");
+                user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            }
+        }
+
+        // 4 Gửi OTP nếu chưa xác minh email
+        boolean emailVerificationRequired = !Boolean.TRUE.equals(user.isEmailVerified());
+        log.info(">>> EMAIL VERIFIED: {} | emailVerificationRequired: {}", user.isEmailVerified(), emailVerificationRequired);
+        if (emailVerificationRequired) {
+            String otp = String.valueOf((int)(Math.random() * 900000) + 100000);
+            VerificationCode verification = VerificationCode.builder()
+                    .email(user.getEmail())
+                    .code(otp)
+                    .expiresAt(LocalDateTime.now().plusMinutes(10))
+                    .build();
+            verificationCodeRepository.save(verification);
+
+            emailService.sendOtpEmail(
+                    user.getEmail(),
+                    otp,
+                    "https://flexistudy.vn/verify?email=" + user.getEmail() + "&otp=" + otp
+            );
+        }
+
+        // 5 Sinh token JWT
+        String accessToken = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(accessToken)
+                .emailVerificationRequired(emailVerificationRequired)
+                .email(user.getEmail())
+                .authenticated(true)
+                .build();
+    }
+
+
+    public void forgotPassword(ForgotPasswordRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
         var user = userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    User newUser = User.builder()
-                            .email(email)
-                            .fullName(fullName)
-                            .avatarUrl(avatar)
-                            .googleSub(googleSub)
-                            .provider("google")
-                            .username(email)
-                            .build();
-                    return userRepository.save(newUser);
-                });
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        // 4️⃣ Sinh JWT nội bộ
-        var accessToken = generateToken(user);
-        // var refreshToken = generateRefreshToken(user); // giữ lại nếu cần
+        // Tạo OTP
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        verificationCodeRepository.save(VerificationCode.builder()
+                .email(email)
+                .code(otp)
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .build());
 
-        // 5️⃣ Trả về cho FE (FE sẽ coi token này là refresh luôn)
+        // Gửi mail
+        emailService.sendForgotPasswordEmail(email, user.getFullName(), otp);
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        var user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // Mã hóa password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+
+    public void verifyForgotOtp(VerifyOtpRequest request) {
+        var verification = verificationCodeRepository.findByEmailAndCode(
+                request.getEmail().trim().toLowerCase(),
+                request.getOtp().trim()
+        ).orElseThrow(() -> new AppException(ErrorCode.INVALID_OTP));
+
+        if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.EXPIRED_OTP);
+        }
+
+        // Mark verified hoặc xóa luôn để tránh reuse
+        verificationCodeRepository.delete(verification);
+    }
+
+
+    @Transactional
+    public AuthenticationResponse verifyOtp(VerifyOtpRequest request) {
+        log.info("verifyOtp request email={}, otp={}", request.getEmail(), request.getOtp());
+
+        var verification = verificationCodeRepository.findByEmailAndCode(
+                request.getEmail().trim().toLowerCase(),
+                request.getOtp().trim()
+        ).orElseThrow(() -> new AppException(ErrorCode.INVALID_OTP));
+
+        // 1 Kiểm tra hết hạn
+        if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.EXPIRED_OTP);
+        }
+
+        // 2 Lấy user tương ứng
+        var user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // 3 Cập nhật trạng thái xác minh email
+        user.setEmailVerified(true);
+        userRepository.save(user);
+
+        // 4 Xác định user có password hay chưa
+        boolean noPassword = (user.getPassword() == null || user.getPassword().isBlank());
+
+        // 5 Sinh JWT token thật
+        String accessToken = generateToken(user);
+
+        // 6 Xóa OTP để tránh reuse
+        verificationCodeRepository.delete(verification);
+
+        // (optional) gửi mail chào mừng
+        // emailService.sendWelcomeEmail(user.getEmail(), user.getFullName(), "https://flexistudy.vn/home");
+
+        // 7 Trả kết quả cho FE
         return AuthenticationResponse.builder()
                 .token(accessToken)
                 .authenticated(true)
+                .email(user.getEmail())
+                .emailVerificationRequired(false)
+                .noPassword(noPassword)
                 .build();
     }
 
@@ -207,7 +347,7 @@ public class AuthenticationService {
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 
-    private String generateToken(User user) {
+    public String generateToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
@@ -231,30 +371,6 @@ public class AuthenticationService {
             return jwsObject.serialize();
         } catch (JOSEException e) {
             log.error("Cannot create token", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String generateRefreshToken(User user) {
-        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())
-                .issuer("quyhoang.com")
-                .issueTime(new Date())
-                // exp của refresh có thể đặt ngắn; verifyToken(isRefresh=true) sẽ dùng issueTime + REFRESHABLE_DURATION
-                .expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
-                .jwtID(UUID.randomUUID().toString())
-                .claim("userId", user.getId())
-                .claim("scope", buildScope(user)) // có thể thêm claim "typ":"refresh" nếu muốn
-                .build();
-
-        JWSObject jwsObject = new JWSObject(header, new Payload(jwtClaimsSet.toJSONObject()));
-        try {
-            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
-            return jwsObject.serialize();
-        } catch (JOSEException e) {
-            log.error("Cannot create refresh token", e);
             throw new RuntimeException(e);
         }
     }
