@@ -27,7 +27,7 @@ public class SecurityConfig {
             "/users", "/auth/token", "/auth/introspect", "/auth/logout",
             "/auth/refresh", "/media/download/**", "/users/**", "/uploads/**",
             "/companies/upload-logo/**", "/v3/api-docs/**", "/swagger-ui/**",
-            "/swagger-ui.html", "/availability-windows/**", "/jobs/**"
+            "/swagger-ui.html", "/availability-windows/**", "/jobs/**", "/auth/outbound/authentication"
     };
 
     @Autowired
@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ bật cors ở đây
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // bật cors ở đây
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
@@ -53,7 +53,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ✅ Cấu hình CORS cho phép mọi domain test (Swagger, frontend, v.v.)
+    // Cấu hình CORS cho phép mọi domain test (Swagger, frontend, v.v.)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

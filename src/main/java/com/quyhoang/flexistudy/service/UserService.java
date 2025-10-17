@@ -14,9 +14,7 @@ import com.quyhoang.flexistudy.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -46,6 +44,8 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     SkillRepository skillRepository;
     FileStorageService fileStorageService;
+    String DEFAULT_ROLE = "USER";
+
 
     @Transactional
     public void register(RegisterRequest request) {
@@ -213,4 +213,5 @@ public class UserService {
 
         userRepository.save(user);
     }
+
 }
