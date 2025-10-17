@@ -88,31 +88,41 @@ public class JobService {
             EmployeeType type,
             Integer minSalary,
             Integer maxSalary,
-            boolean isAdmin   // 👈 thêm flag
+            boolean isAdmin,
+            JobStatus status
     ) {
-        Sort sort = Sort.by("postedAt").descending();
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
-
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by("postedAt").descending());
         LocalDateTime now = LocalDateTime.now();
-        Page<Job> jobPage;
 
-        if (Boolean.TRUE.equals(urgent)) {
-            LocalDateTime postedCutoff = now.minusDays(7);
-            LocalDateTime urgentDeadline = now.plusDays(3);
-            jobPage = jobRepository.findUrgentJobs(postedCutoff, urgentDeadline, city, pageable);
+        // Bắt đầu với spec rỗng
+        Specification<Job> spec = Specification.where(null);
+
+        // Scope: user chỉ thấy OPEN; admin thấy tất cả
+        if (!isAdmin) {
+            spec = spec.and(JobSpecs.statusOpen());
         } else {
-            LocalDateTime cutoff = now.minusDays(30);
-
-            Specification<Job> spec = Specification
-                    .where(isAdmin ? null : JobSpecs.statusOpen())
-                    .and(JobSpecs.postedSince(cutoff))
-                    .and(JobSpecs.matchesSearch(search))
-                    .and(JobSpecs.cityEquals(city))
-                    .and(JobSpecs.typeEquals(type))
-                    .and(JobSpecs.salaryBetween(minSalary, maxSalary));
-
-            jobPage = jobRepository.findAll(spec, pageable);
+            spec = spec.and(JobSpecs.statusEquals(status));
         }
+
+        // Urgent filter (nếu bật)
+        if (Boolean.TRUE.equals(urgent)) {
+            // ví dụ policy: urgent=true và đăng trong 7 ngày gần đây
+            spec = spec.and(JobSpecs.urgentIs(true))
+                    .and(JobSpecs.postedSince(now.minusDays(7)));
+        } else {
+            // Chỉ user mới bị giới hạn 30 ngày; admin không giới hạn
+            if (!isAdmin) {
+                spec = spec.and(JobSpecs.postedSince(now.minusDays(30)));
+            }
+        }
+
+        // Optional filters (null-safe)
+        spec = spec.and(JobSpecs.matchesSearch(search))
+                .and(JobSpecs.cityEqualsIgnoreCase(city))
+                .and(JobSpecs.typeEquals(type))
+                .and(JobSpecs.salaryBetween(minSalary, maxSalary));
+
+        Page<Job> jobPage = jobRepository.findAll(spec, pageable);
 
         List<JobResponse> jobResponses = jobPage.getContent()
                 .stream()
@@ -127,6 +137,46 @@ public class JobService {
                 .data(jobResponses)
                 .build();
     }
+
+
+    public PageResponse<JobResponse> getJobsByCategory(
+            String category,
+            int page,
+            int size,
+            String search,
+            String city,
+            EmployeeType type,
+            Integer minSalary,
+            Integer maxSalary,
+            Boolean urgent
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("postedAt").descending());
+
+        Specification<Job> spec = Specification
+                .where(JobSpecs.categoryEquals(category))
+                .and(JobSpecs.statusOpen())
+                .and(JobSpecs.matchesSearch(search))
+                .and(JobSpecs.cityEquals(city))
+                .and(JobSpecs.typeEquals(type))
+                .and(JobSpecs.salaryBetween(minSalary, maxSalary))
+                .and(JobSpecs.postedSince(LocalDateTime.now().minusDays(30)));
+
+        Page<Job> jobPage = jobRepository.findAll(spec, pageable);
+
+        List<JobResponse> jobResponses = jobPage.getContent().stream()
+                .map(jobMapper::toJobResponse)
+                .toList();
+
+        return PageResponse.<JobResponse>builder()
+                .currentPage(jobPage.getNumber() + 1)
+                .totalPages(jobPage.getTotalPages())
+                .pageSize(jobPage.getSize())
+                .totalElements(jobPage.getTotalElements())
+                .data(jobResponses)
+                .build();
+    }
+
+
 
 
     public JobResponse getJobById(String id) {

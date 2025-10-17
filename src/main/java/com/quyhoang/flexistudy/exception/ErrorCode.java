@@ -35,6 +35,9 @@ public enum ErrorCode {
     UPLOAD_FAILE(1025, "Upload file is faile", HttpStatus.BAD_REQUEST),
     RECRUITER_NO_COMPANY(1026, "User haven't been assign a company", HttpStatus.BAD_REQUEST),
     INVALID_ROLE(1027, "Role is invalid", HttpStatus.BAD_REQUEST),
+    PASSWORD_EXISTED(1028, "Password is existed", HttpStatus.BAD_REQUEST),
+    INVALID_OTP(1029, "OTP is invalid", HttpStatus.BAD_REQUEST),
+    EXPIRED_OTP(1030, "OPT was expired", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

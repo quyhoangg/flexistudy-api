@@ -2,10 +2,8 @@ package com.quyhoang.flexistudy.service;
 
 import com.quyhoang.flexistudy.configuration.JwtUtils;
 import com.quyhoang.flexistudy.configuration.SecurityUtils;
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
 import com.quyhoang.flexistudy.dto.request.ApplicationCreateRequest;
 import com.quyhoang.flexistudy.dto.request.ApplicationUpdateRequest;
-import com.quyhoang.flexistudy.dto.response.ApplicationResponse;
 import com.quyhoang.flexistudy.entity.Application;
 import com.quyhoang.flexistudy.entity.Job;
 import com.quyhoang.flexistudy.entity.User;
@@ -23,8 +21,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -82,7 +78,7 @@ public class ApplicationService {
         Application saved = applicationRepository.save(app);
 
         // 🔹 7. Log ra console/server
-        log.info("✅ User [{}] applied for job [{}] at company [{}]",
+        log.info(" User [{}] applied for job [{}] at company [{}]",
                 user.getId(), job.getId(), job.getCompany().getName());
 
         return saved;
@@ -125,7 +121,7 @@ public class ApplicationService {
         }
 
         Application updated = applicationRepository.save(app);
-        log.info("🔄 Application {} status updated to {}", id, req.getStatus());
+        log.info(" Application {} status updated to {}", id, req.getStatus());
         return updated;
     }
 

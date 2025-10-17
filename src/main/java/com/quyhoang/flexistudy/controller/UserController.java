@@ -1,7 +1,9 @@
 package com.quyhoang.flexistudy.controller;
 
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.dto.PageResponse;
 import com.quyhoang.flexistudy.dto.request.*;
+import com.quyhoang.flexistudy.dto.response.AuthenticationResponse;
 import com.quyhoang.flexistudy.dto.response.UserResponse;
 import com.quyhoang.flexistudy.service.UserService;
 import jakarta.validation.Valid;
@@ -9,7 +11,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,16 @@ public class UserController {
                 .message("Đăng ký tài khoản thành công!")
                 .build();
     }
+
+    @PostMapping("/create-password")
+    ApiResponse<AuthenticationResponse> createPassword(@RequestBody @Valid PasswordCreationRequest request) {
+        var result = userService.createPassword(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(result)
+                .message("Password has been created, you could use it to log-in")
+                .build();
+    }
+
 
     @PostMapping
     ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
