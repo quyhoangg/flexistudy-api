@@ -9,9 +9,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableFeignClients
 public class IdentityServiceApplication {
     public static void main(String[] args) {
-        // ✅ Load .env trước khi Spring khởi động
-        Dotenv dotenv = Dotenv.load();
-        dotenv.entries().forEach(e -> System.setProperty(e.getKey(), e.getValue()));
         SpringApplication.run(IdentityServiceApplication.class, args);
     }
 }
