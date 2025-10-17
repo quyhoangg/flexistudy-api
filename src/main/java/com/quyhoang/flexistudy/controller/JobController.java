@@ -2,11 +2,12 @@ package com.quyhoang.flexistudy.controller;
 
 import com.quyhoang.flexistudy.dto.JobCategoryCount;
 import com.quyhoang.flexistudy.dto.PageResponse;
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.dto.request.JobCreationRequest;
 import com.quyhoang.flexistudy.dto.request.JobUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.JobResponse;
 import com.quyhoang.flexistudy.enums.EmployeeType;
+import com.quyhoang.flexistudy.enums.JobStatus;
 import com.quyhoang.flexistudy.service.JobService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -25,12 +26,34 @@ import java.util.List;
 public class JobController {
     JobService jobService;
 
+    @GetMapping("/by-category")
+    public ApiResponse<PageResponse<JobResponse>> getJobsByCategory(
+            @RequestParam String category,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) EmployeeType type,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) Integer maxSalary,
+            @RequestParam(required = false) Boolean urgent
+    ) {
+        PageResponse<JobResponse> response = jobService.getJobsByCategory(
+                category, page, size, search, city, type, minSalary, maxSalary, urgent
+        );
+        return ApiResponse.<PageResponse<JobResponse>>builder()
+                .result(response)
+                .build();
+    }
+
+
     @PostMapping
     ApiResponse<JobResponse> createJob(@RequestBody  JobCreationRequest request) {
         return ApiResponse.<JobResponse>builder()
                 .result(jobService.createJob(request))
                 .build();
     }
+
 
     @GetMapping
     public ApiResponse<PageResponse<JobResponse>> getAllJobsForUser(
@@ -44,7 +67,7 @@ public class JobController {
             @RequestParam(required = false) Integer maxSalary
     ) {
         PageResponse<JobResponse> response = jobService.getAllJobs(
-                page, size, search, city, urgent, type, minSalary, maxSalary, false
+                page, size, search, city, urgent, type, minSalary, maxSalary, false, null
         );
         return ApiResponse.<PageResponse<JobResponse>>builder().result(response).build();
     }
@@ -58,10 +81,11 @@ public class JobController {
             @RequestParam(defaultValue = "false") boolean urgent,
             @RequestParam(required = false) EmployeeType type,
             @RequestParam(required = false) Integer minSalary,
-            @RequestParam(required = false) Integer maxSalary
+            @RequestParam(required = false) Integer maxSalary,
+            @RequestParam(required = false) JobStatus status
     ) {
         PageResponse<JobResponse> response = jobService.getAllJobs(
-                page, size, search, city, urgent, type, minSalary, maxSalary, true
+                page, size, search, city, urgent, type, minSalary, maxSalary, true, status
         );
         return ApiResponse.<PageResponse<JobResponse>>builder().result(response).build();
     }

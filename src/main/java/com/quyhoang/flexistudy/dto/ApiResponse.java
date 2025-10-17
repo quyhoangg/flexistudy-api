@@ -1,4 +1,4 @@
-package com.quyhoang.flexistudy.dto.request;
+package com.quyhoang.flexistudy.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;

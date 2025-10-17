@@ -1,11 +1,10 @@
 package com.quyhoang.flexistudy.controller;
 
 import com.quyhoang.flexistudy.dto.PageResponse;
-import com.quyhoang.flexistudy.dto.request.ApiResponse;
+import com.quyhoang.flexistudy.dto.ApiResponse;
 import com.quyhoang.flexistudy.dto.request.CompanyCreationRequest;
 import com.quyhoang.flexistudy.dto.request.CompanyUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.CompanyResponse;
-import com.quyhoang.flexistudy.dto.response.UserResponse;
 import com.quyhoang.flexistudy.entity.Job;
 import com.quyhoang.flexistudy.service.CompanyService;
 import jakarta.validation.Valid;

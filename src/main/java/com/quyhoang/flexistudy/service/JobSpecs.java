@@ -14,15 +14,33 @@ public final class JobSpecs {
         return (root, q, cb) -> cb.equal(root.get("status"), JobStatus.OPEN);
     }
 
-    public static Specification<Job> postedSince(LocalDateTime cutoff) {
-        if (cutoff == null) return null;
-        return (root, q, cb) -> cb.greaterThanOrEqualTo(root.get("postedAt"), cutoff);
+    public static Specification<Job> statusEquals(JobStatus status) {
+        if (status == null) return null;
+        return (root, q, cb) -> cb.equal(root.get("status"), status);
+    }
+
+    public static Specification<Job> postedSince(LocalDateTime since) {
+        if (since == null) return null;
+        return (root, q, cb) -> cb.or(
+                cb.isNull(root.get("postedAt")),
+                cb.greaterThanOrEqualTo(root.get("postedAt"), since)
+        );
     }
 
     public static Specification<Job> cityEquals(String city) {
         if (city == null || city.trim().isEmpty()) return null;
         String v = city.trim().toLowerCase();
         return (root, q, cb) -> cb.equal(cb.lower(root.get("city")), v);
+    }
+
+    public static Specification<Job> urgentIs(Boolean urgent) {
+        if (urgent == null) return null;
+        return (root, q, cb) -> cb.equal(root.get("urgent"), urgent);
+    }
+
+    public static Specification<Job> cityEqualsIgnoreCase(String city) {
+        if (city == null || city.isBlank()) return null;
+        return (root, q, cb) -> cb.equal(cb.lower(root.get("city")), city.trim().toLowerCase());
     }
 
     public static Specification<Job> typeEquals(EmployeeType type) {
@@ -59,4 +77,15 @@ public final class JobSpecs {
             }
         };
     }
+
+    public static Specification<Job> categoryEquals(String category) {
+        if (category == null || category.trim().isEmpty()) return null;
+        try {
+            var categoryEnum = com.quyhoang.flexistudy.enums.JobCategory.valueOf(category.trim().toUpperCase());
+            return (root, q, cb) -> cb.equal(root.get("category"), categoryEnum);
+        } catch (IllegalArgumentException e) {
+            return null; // nếu truyền sai tên category thì bỏ qua filter
+        }
+    }
+
 }

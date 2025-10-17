@@ -41,10 +41,12 @@ public class User {
     LocalDateTime createdAt;
     @Column(nullable = false)
     boolean profileCompleted = false;
+    boolean emailVerified = false;
     @ManyToMany
     Set<Role> roles;
     String fullName;
     String provider;
+
 
     @ManyToMany
     @JoinTable(

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chào mừng đến với FlexiStudy</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f7fb; margin: 0; padding: 0; }
+        .container { max-width: 500px; background: #ffffff; margin: 40px auto; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 32px; }
+        .logo { display: block; margin: 0 auto 20px; width: 120px; }
+        .title { text-align: center; color: #0b2347; font-size: 22px; font-weight: 700; }
+        .message { text-align: center; color: #333; font-size: 15px; margin-top: 20px; line-height: 1.6; }
+        .cta { text-align: center; margin-top: 30px; }
+        .cta a { background-color: #0b2347; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; }
+        .footer { text-align: center; color: #777; font-size: 12px; margin-top: 24px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <img class="logo" src="https://i.ibb.co/hBwjZyL/flexistudy-logo.png" alt="FlexiStudy Logo">
+    <h2 class="title">Chào mừng bạn đến với FlexiStudy 🎓</h2>
+
+    <p class="message">
+        Xin chào <strong th:text="${userName}">Người dùng</strong>,<br>
+        Cảm ơn bạn đã đăng ký tài khoản tại <strong>FlexiStudy</strong>!
+        Nền tảng của chúng tôi giúp bạn kết nối dễ dàng với nhà tuyển dụng, khóa học, và cơ hội nghề nghiệp phù hợp.
+    </p>
+
+    <div class="cta">
+        <a th:href="${getStartedLink}" target="_blank">Bắt đầu ngay</a>
+    </div>
+
+    <p class="footer">
+        Cần hỗ trợ? Liên hệ <a href="mailto:support@flexistudy.vn">support@flexistudy.vn</a><br>
+        © FlexiStudy Team
+    </p>
+</div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-package com.quyhoang.flexistudy.service;
+package com.quyhoang.flexistudy.repository.httpClient;
 
 import com.quyhoang.flexistudy.dto.request.ExchangeTokenRequest;
 import com.quyhoang.flexistudy.dto.response.ExchangeTokenResponse;

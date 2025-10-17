@@ -1,9 +1,11 @@
 package com.quyhoang.flexistudy.service;
 
 import com.quyhoang.flexistudy.dto.PageResponse;
+import com.quyhoang.flexistudy.dto.request.PasswordCreationRequest;
 import com.quyhoang.flexistudy.dto.request.RegisterRequest;
 import com.quyhoang.flexistudy.dto.request.UserCreationRequest;
 import com.quyhoang.flexistudy.dto.request.UserUpdateRequest;
+import com.quyhoang.flexistudy.dto.response.AuthenticationResponse;
 import com.quyhoang.flexistudy.dto.response.UserResponse;
 import com.quyhoang.flexistudy.entity.*;
 import com.quyhoang.flexistudy.enums.RoleName;
@@ -26,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
@@ -44,7 +47,7 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     SkillRepository skillRepository;
     FileStorageService fileStorageService;
-    String DEFAULT_ROLE = "USER";
+    AuthenticationService authenticationService;
 
 
     @Transactional
@@ -68,6 +71,30 @@ public class UserService {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
     }
+
+    public AuthenticationResponse createPassword(PasswordCreationRequest request) {
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+
+        User user = userRepository.findByUsername(name)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (StringUtils.hasText(user.getPassword()))
+            throw new AppException(ErrorCode.PASSWORD_EXISTED);
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+
+        // ✅ Sinh token mới để frontend dùng tiếp
+        String token = authenticationService.generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .email(user.getEmail())
+                .build();
+    }
+
 
     public UserResponse createUser(UserCreationRequest request) {
         User user = userMapper.toUser(request);
@@ -102,7 +129,11 @@ public class UserService {
         User user = userRepository.findByUsername(name).orElseThrow(
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)
         );
-        return userMapper.toUserResponse(user);
+
+        var userResponse = userMapper.toUserResponse(user);
+        userResponse.setNoPassword(!StringUtils.hasText(user.getPassword()));
+
+        return userResponse;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
