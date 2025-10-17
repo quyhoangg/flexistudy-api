@@ -16,7 +16,11 @@ import java.util.Set;
 @Entity
 public class Role {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, unique = true, length = 50)
     RoleName name;
 
     String description;
