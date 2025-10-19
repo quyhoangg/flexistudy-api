@@ -15,9 +15,7 @@ import com.quyhoang.flexistudy.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -109,7 +107,7 @@ public class CompanyService {
 
     @Transactional
     public String uploadLogo(String companyId, MultipartFile file) {
-        log.info("➡️ Upload logo for company {} | file={}", companyId, file == null ? "null" : file.getOriginalFilename());
+        log.info(" Upload logo for company {} | file={}", companyId, file == null ? "null" : file.getOriginalFilename());
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
 
@@ -125,7 +123,7 @@ public class CompanyService {
         company.setLogoUrl(newUrl);
         companyRepository.save(company);
 
-        log.info("✅ Updated company {} logo -> {}", companyId, newUrl);
+        log.info(" Updated company {} logo -> {}", companyId, newUrl);
 
         return newUrl;
     }
