@@ -38,6 +38,15 @@ public enum ErrorCode {
     PASSWORD_EXISTED(1028, "Password is existed", HttpStatus.BAD_REQUEST),
     INVALID_OTP(1029, "OTP is invalid", HttpStatus.BAD_REQUEST),
     EXPIRED_OTP(1030, "OPT was expired", HttpStatus.BAD_REQUEST),
+    NEWS_NOT_FOUND(1031, "NEWS_NOT_FOUND", HttpStatus.NOT_FOUND),
+    AUTHOR_NOT_FOUND(1032, "AUTHOR_NOT_FOUND", HttpStatus.NOT_FOUND),
+    INVALID_STATUS(1033, "INVALID_STATUS", HttpStatus.BAD_REQUEST),
+    INTERNAL_ERROR(1034, "INTERNAL_ERROR", HttpStatus.INTERNAL_SERVER_ERROR),
+    UNSUPPORTED_FILE_TYPE(1035, "File was not supported", HttpStatus.BAD_REQUEST),
+    FILE_TOO_LARGE(1035, "File too large", HttpStatus.BAD_REQUEST),
+    NOT_FOUND(1035, "File not found", HttpStatus.NOT_FOUND),
+    EMAIL_ALREADY_EXISTS(1036, "Email already exist", HttpStatus.BAD_REQUEST),
+    COMPANY_ALREADY_EXISTS(1037, "Company already exist", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
