@@ -16,6 +16,6 @@ public class JobQuery {
     private EmployeeType type;       // FULLTIME/PARTTIME/INTERN
     private Integer minSalary;
     private Integer maxSalary;
-    private Integer recentDays;      // null = không lọc theo thời gian
+    private Integer recentDays;
 }
 
