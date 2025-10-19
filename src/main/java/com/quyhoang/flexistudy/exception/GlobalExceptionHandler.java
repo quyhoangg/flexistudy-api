@@ -84,6 +84,33 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse> handleMissingParam(org.springframework.web.bind.MissingServletRequestParameterException ex) {
+        log.error("Missing required request parameter: {}", ex.getParameterName());
+
+        ErrorCode errorCode;
+
+        // Nếu tham số nào bị thiếu thì map sang ErrorCode tương ứng
+        switch (ex.getParameterName()) {
+            case "authorId":
+                errorCode = ErrorCode.AUTHOR_NOT_FOUND;
+                break;
+            // bạn có thể thêm các case khác nếu muốn custom lỗi riêng
+            default:
+                errorCode = ErrorCode.INVALID_REQUEST;
+        }
+
+        ApiResponse response = ApiResponse.builder()
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .build();
+
+        return ResponseEntity
+                .status(errorCode.getStatusCode())
+                .body(response);
+    }
+
+
     /**
      * Handle validation errors (e.g., @Valid, @NotNull, @Min, etc.).
      */
