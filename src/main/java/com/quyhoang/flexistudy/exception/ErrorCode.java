@@ -38,6 +38,9 @@ public enum ErrorCode {
     PASSWORD_EXISTED(1028, "Password is existed", HttpStatus.BAD_REQUEST),
     INVALID_OTP(1029, "OTP is invalid", HttpStatus.BAD_REQUEST),
     EXPIRED_OTP(1030, "OPT was expired", HttpStatus.BAD_REQUEST),
+
+    // Upgrade
+    UPGRADE_PLAN_NOT_FOUND(1031,"Upgrade Plan not found", HttpStatus.NOT_FOUND),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

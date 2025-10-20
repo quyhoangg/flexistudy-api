@@ -72,4 +72,11 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<AvailabilityWindow> availabilityWindows = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "upgrade_plan_id")
+    UpgradePlan upgradePlan;
+
+    @Column
+    LocalDate planExpirationDate; // Ngày hết hạn gói hiện tại
+
 }
