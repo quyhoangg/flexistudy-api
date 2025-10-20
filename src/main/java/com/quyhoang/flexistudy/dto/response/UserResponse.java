@@ -25,4 +25,5 @@ public class UserResponse {
     boolean noPassword;
     boolean profileCompleted;
     Set<RoleResponse> roles;
+    UpgradePlanResponse upgradePlan;
 }

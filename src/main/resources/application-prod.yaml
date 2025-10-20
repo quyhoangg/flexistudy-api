@@ -47,3 +47,9 @@ app:
   file:
     storage-dir: ${FILE_STORAGE_DIR}
     download-prefix: ${FILE_DOWNLOAD_PREFIX}
+
+payos:
+  client-id:
+  api-key:
+  checksum-key:
+  api-url: https://api-merchant.payos.vn/v2/payment-requests
