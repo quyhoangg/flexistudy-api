@@ -44,6 +44,7 @@ public class UserService {
     SkillRepository skillRepository;
     FileStorageService fileStorageService;
     AuthenticationService authenticationService;
+    UpgradePlanRepository upgradePlanRepository;
 
     @Transactional
     public void register(RegisterRequest request) {
@@ -59,12 +60,17 @@ public class UserService {
         roleRepository.findByName(RoleName.USER).ifPresent(roleEntities::add);
         user.setRoles(roleEntities);
 
+        UpgradePlan freePlan = upgradePlanRepository.findByNameIgnoreCase("Free")
+                .orElseThrow(() -> new AppException(ErrorCode.UPGRADE_PLAN_NOT_FOUND));
+        user.setUpgradePlan(freePlan);
+
         try {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
     }
+
 
     public AuthenticationResponse createPassword(PasswordCreationRequest request) {
         var context = SecurityContextHolder.getContext();

@@ -31,11 +31,15 @@ public class SecurityConfig {
             "/test/send-otp", "/test/welcome", "/test/forgot-password", "/auth/verify-otp",
             "/auth/forgot-password",
             "/auth/verify-forgot-otp",
-            "/auth/reset-password", "hr/register"
+            "/auth/reset-password", "hr/register",
+            "/auth/reset-password",
+            "/upgrade",
+            "/payments/create",
+            "/payments/callback",
     };
 
     @Autowired
-        private CustomJwtDecoder customJwtDecoder;
+        public CustomJwtDecoder customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
