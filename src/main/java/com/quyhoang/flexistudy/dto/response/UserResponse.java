@@ -1,5 +1,6 @@
 package com.quyhoang.flexistudy.dto.response;
 
+import com.quyhoang.flexistudy.entity.Company;
 import com.quyhoang.flexistudy.enums.RoleName;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,7 @@ public class UserResponse {
     String lastName;
     String address;
     String phone;
+    String companyName;
     String avatarUrl;
     LocalDate dob;
     boolean noPassword;

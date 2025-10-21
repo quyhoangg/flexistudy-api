@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
@@ -22,9 +23,8 @@ public class AvailabilityWindow {
     @JoinColumn(name = "user_id", nullable = false)
     User user;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 15)
-    DayOfWeek dayOfWeek;
+    @Column(nullable = false)
+    LocalDate date;
 
     @Column(nullable = false)
     LocalTime startTime;

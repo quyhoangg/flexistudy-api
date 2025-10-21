@@ -20,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/cv")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserCvController {
 
     UserCvService userCvService;
