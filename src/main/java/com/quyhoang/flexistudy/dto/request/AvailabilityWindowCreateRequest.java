@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
@@ -17,7 +18,7 @@ public class AvailabilityWindowCreateRequest {
     String userId;
 
     @NotNull
-    DayOfWeek dayOfWeek;
+    LocalDate date;
 
     @NotNull
     LocalTime startTime;

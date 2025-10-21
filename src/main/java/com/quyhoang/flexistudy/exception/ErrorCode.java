@@ -47,6 +47,7 @@ public enum ErrorCode {
     NOT_FOUND(1035, "File not found", HttpStatus.NOT_FOUND),
     EMAIL_ALREADY_EXISTS(1036, "Email already exist", HttpStatus.BAD_REQUEST),
     COMPANY_ALREADY_EXISTS(1037, "Company already exist", HttpStatus.BAD_REQUEST),
+    AVAILABILITY_DUPLICATE_SLOT(1038, "AVAILABILITY_DUPLICATE_SLOT", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

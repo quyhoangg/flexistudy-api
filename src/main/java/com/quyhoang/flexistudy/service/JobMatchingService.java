@@ -64,9 +64,9 @@ public class JobMatchingService {
     private boolean isTimeCompatible(User user, Job job) {
         for (JobShift shift : job.getJobShifts()) {
             boolean available = user.getAvailabilityWindows().stream().anyMatch(a ->
-                    a.getDayOfWeek() == shift.getDayOfWeek()
-                            && !shift.getStartTime().isBefore(a.getStartTime())
-                            && !shift.getEndTime().isAfter(a.getEndTime())
+                    a.getDate().getDayOfWeek() == shift.getDayOfWeek() &&
+                            !shift.getStartTime().isBefore(a.getStartTime()) &&
+                            !shift.getEndTime().isAfter(a.getEndTime())
             );
             if (!available) return false;
         }
