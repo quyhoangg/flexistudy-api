@@ -22,6 +22,7 @@ public class UserResponse {
     String address;
     String phone;
     String companyName;
+    String companyId;
     String avatarUrl;
     LocalDate dob;
     boolean noPassword;
