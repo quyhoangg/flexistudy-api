@@ -36,10 +36,11 @@ public class SecurityConfig {
             "/upgrade",
             "/payments/create",
             "/payments/callback",
+            "/chat"
     };
 
     @Autowired
-        public CustomJwtDecoder customJwtDecoder;
+    private CustomJwtDecoder customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

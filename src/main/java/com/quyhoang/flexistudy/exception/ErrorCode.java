@@ -50,6 +50,7 @@ public enum ErrorCode {
     AVAILABILITY_DUPLICATE_SLOT(1038, "AVAILABILITY_DUPLICATE_SLOT", HttpStatus.BAD_REQUEST),
     // Upgrade
     UPGRADE_PLAN_NOT_FOUND(1031,"Upgrade Plan not found", HttpStatus.NOT_FOUND),
+    GEMINI_API_ERROR(1031, "Lỗi khi gọi Gemini API", HttpStatus.BAD_GATEWAY)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
