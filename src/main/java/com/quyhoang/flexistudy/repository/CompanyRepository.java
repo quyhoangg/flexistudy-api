@@ -17,4 +17,5 @@ public interface CompanyRepository extends JpaRepository<Company,String> {
            OR LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
     """)
     Page<Company> search(@Param("keyword") String keyword, Pageable pageable);
+    boolean existsByName(String name);
 }

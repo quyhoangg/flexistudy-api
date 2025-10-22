@@ -30,9 +30,17 @@ public class AvailabilityWindowService {
         User user = userRepository.findById(req.getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
+        //  Check nếu user đã có cùng khung giờ trong cùng ngày
+        boolean exists = availabilityWindowRepository.existsByUser_IdAndDateAndStartTimeAndEndTime(
+                req.getUserId(), req.getDate(), req.getStartTime(), req.getEndTime()
+        );
+        if (exists) {
+            throw new AppException(ErrorCode.AVAILABILITY_DUPLICATE_SLOT);
+        }
+
         AvailabilityWindow window = AvailabilityWindow.builder()
                 .user(user)
-                .dayOfWeek(req.getDayOfWeek())
+                .date(req.getDate())
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .note(req.getNote())
@@ -40,6 +48,7 @@ public class AvailabilityWindowService {
 
         return availabilityWindowRepository.save(window);
     }
+
 
     @Transactional
     public AvailabilityWindow update(String id, AvailabilityWindowUpdateRequest req) {

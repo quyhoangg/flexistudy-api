@@ -37,6 +37,8 @@ public class News {
     @Column(nullable = false, length = 50)
     ContentStatus status;
 
+    String category;
+
     @CreationTimestamp
     LocalDateTime createdAt;
 
