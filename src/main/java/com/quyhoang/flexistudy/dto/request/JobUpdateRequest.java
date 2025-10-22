@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -32,5 +33,6 @@ public class JobUpdateRequest {
     String city;
     JobStatus status;
     Set<String> skillIds;
+    List<JobShiftUpdateRequest> jobShifts;
 }
 

@@ -22,4 +22,6 @@ public class ProfileUpdateRequest {
 
     List<EducationRequest> educations;
     List<ExperienceRequest> experiences;
+
+    List<String> skillIds;
 }

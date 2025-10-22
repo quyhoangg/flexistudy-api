@@ -38,6 +38,7 @@ public class JobResponse {
 
     String companyName;
     String companyLogoUrl;
+    List<JobShiftResponse> jobShifts;
 
     List<SkillResponse> requiredSkills;
 }

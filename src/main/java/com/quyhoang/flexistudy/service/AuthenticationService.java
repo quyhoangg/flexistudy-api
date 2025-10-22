@@ -101,7 +101,7 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse outboundAuthenticate(String code) {
-        // 1️⃣ Đổi code -> access token từ Google
+        // 1 Đổi code -> access token từ Google
         var response = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
                 .code(code)
                 .clientId(CLIENT_ID)
@@ -112,7 +112,7 @@ public class AuthenticationService {
 
         String googleAccessToken = response.getAccessToken();
 
-        // 2️⃣ Lấy user info từ Google
+        // Lấy user info từ Google
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(googleAccessToken);

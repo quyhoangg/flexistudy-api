@@ -62,13 +62,19 @@ public class JobMatchingService {
     }
 
     private boolean isTimeCompatible(User user, Job job) {
+        if (user.getAvailabilityWindows() == null || user.getAvailabilityWindows().isEmpty()) {
+            return false;
+        }
+
         for (JobShift shift : job.getJobShifts()) {
             boolean available = user.getAvailabilityWindows().stream().anyMatch(a ->
-                    a.getDate().getDayOfWeek() == shift.getDayOfWeek() &&
-                            !shift.getStartTime().isBefore(a.getStartTime()) &&
-                            !shift.getEndTime().isAfter(a.getEndTime())
+                    a.getDate() != null
+                            && a.getDate().isEqual(shift.getDate())
+                            && !shift.getStartTime().isBefore(a.getStartTime()) // a.start <= shift.start
+                            && !shift.getEndTime().isAfter(a.getEndTime())       // shift.end <= a.end
             );
-            if (!available) return false;
+
+            if (!available) return false; // chỉ cần một ca không phủ được là fail
         }
         return true;
     }

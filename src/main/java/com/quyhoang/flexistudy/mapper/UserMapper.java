@@ -28,6 +28,7 @@ public interface UserMapper {
     @Mapping(target = "companyName", source = "company.name")
     @Mapping(target = "companyId", source = "company.id")
     @Mapping(target = "upgradePlan", source = "upgradePlan")
+    @Mapping(target = "skills", source = "skills")
     UserResponse toUserResponse(User user);
 
     // Chuyển Role -> RoleResponse

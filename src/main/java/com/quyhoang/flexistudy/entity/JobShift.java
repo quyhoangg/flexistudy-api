@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
@@ -22,9 +23,8 @@ public class JobShift {
     @JoinColumn(name = "job_id", nullable = false)
     Job job;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 15)
-    DayOfWeek dayOfWeek;
+    LocalDate date;
 
     @Column(nullable = false)
     LocalTime startTime;

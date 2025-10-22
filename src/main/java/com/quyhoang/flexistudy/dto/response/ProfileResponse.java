@@ -23,4 +23,5 @@ public class ProfileResponse {
 
     List<EducationResponse> educations;
     List<ExperienceResponse> experiences;
+    List<SkillResponse> skills;
 }

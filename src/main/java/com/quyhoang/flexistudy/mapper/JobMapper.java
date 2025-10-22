@@ -4,15 +4,11 @@ import com.quyhoang.flexistudy.dto.request.JobCreationRequest;
 import com.quyhoang.flexistudy.dto.request.JobUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.JobResponse;
 import com.quyhoang.flexistudy.entity.Job;
-import com.quyhoang.flexistudy.entity.Skill;
 import org.mapstruct.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {JobShiftMapper.class})
 public interface JobMapper {
 
     Job toJob(JobCreationRequest req);
@@ -23,13 +19,13 @@ public interface JobMapper {
     @Mapping(target = "companyName", source = "company.name")
     @Mapping(target = "companyLogoUrl", source = "company.logoUrl")
     @Mapping(target = "requiredSkills", source = "requiredSkills")
+    @Mapping(target = "jobShifts", source = "jobShifts")
     JobResponse toJobResponse(Job job);
 
     @AfterMapping
     default void ensureListsNotNull(@MappingTarget JobResponse out) {
-        if (out.getRequiredSkills() == null) {
-            out.setRequiredSkills(new ArrayList<>());
-        }
+        if (out.getRequiredSkills() == null) out.setRequiredSkills(new ArrayList<>());
+        if (out.getJobShifts() == null) out.setJobShifts(new ArrayList<>());
     }
 }
 

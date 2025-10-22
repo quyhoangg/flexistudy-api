@@ -11,6 +11,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -33,6 +34,7 @@ public class JobCreationRequest {
 
     Integer minSalary;
     Integer maxSalary;
+
     @NotBlank
     String currency;
 
@@ -49,6 +51,9 @@ public class JobCreationRequest {
     String companyId;
 
     @NotEmpty
-    Set<String> skillIds;
+    Set<String> skillNames;
+
+    List<JobShiftCreateRequest> jobShifts;
 }
+
 

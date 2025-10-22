@@ -48,7 +48,7 @@ public class JobController {
 
 
     @PostMapping
-    ApiResponse<JobResponse> createJob(@RequestBody  JobCreationRequest request) {
+    ApiResponse<JobResponse> createJob(@RequestBody @Valid JobCreationRequest request) {
         return ApiResponse.<JobResponse>builder()
                 .result(jobService.createJob(request))
                 .build();

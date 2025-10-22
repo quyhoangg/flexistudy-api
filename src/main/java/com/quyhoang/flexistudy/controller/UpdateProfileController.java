@@ -23,7 +23,7 @@ public class UpdateProfileController {
             JwtAuthenticationToken auth,
             @Valid @RequestBody UserFullProfileRequest request
     ) {
-        // ✅ Lấy userId từ JWT claim "userId"
+        // Lấy userId từ JWT claim "userId"
         String userId = auth.getToken().getClaimAsString("userId");
         if (userId == null) {
             throw new RuntimeException("User ID not found in token");

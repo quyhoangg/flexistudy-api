@@ -7,6 +7,7 @@ import com.quyhoang.flexistudy.dto.request.JobUpdateRequest;
 import com.quyhoang.flexistudy.dto.response.JobResponse;
 import com.quyhoang.flexistudy.entity.Company;
 import com.quyhoang.flexistudy.entity.Job;
+import com.quyhoang.flexistudy.entity.JobShift;
 import com.quyhoang.flexistudy.entity.Skill;
 import com.quyhoang.flexistudy.enums.EmployeeType;
 import com.quyhoang.flexistudy.enums.JobStatus;
@@ -15,6 +16,7 @@ import com.quyhoang.flexistudy.exception.ErrorCode;
 import com.quyhoang.flexistudy.mapper.JobMapper;
 import com.quyhoang.flexistudy.repository.CompanyRepository;
 import com.quyhoang.flexistudy.repository.JobRepository;
+import com.quyhoang.flexistudy.repository.JobShiftRepository;
 import com.quyhoang.flexistudy.repository.SkillRepository;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -28,15 +30,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.LinkedHashSet;
 
-import static com.quyhoang.flexistudy.service.JobSpecs.*;
 
 @Slf4j
 @Service
@@ -47,6 +47,7 @@ public class JobService {
     CompanyRepository companyRepository;
     SkillRepository skillRepository;
     JobMapper jobMapper;
+    JobShiftRepository jobShiftRepository;
 
     @Transactional
     public JobResponse createJob(JobCreationRequest req) {
@@ -57,28 +58,45 @@ public class JobService {
         job.setCompany(company);
         job.setStatus(JobStatus.CLOSED);
 
-        //  Nếu chưa có expiryDate → mặc định 30 ngày kể từ hôm nay
+        // default expiry
         if (job.getExpiryDate() == null) {
             job.setExpiryDate(LocalDateTime.now().plusDays(14));
         }
-
         if (job.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new AppException(ErrorCode.INVALID_REQUEST);
         }
 
-        if (req.getSkillIds() != null && !req.getSkillIds().isEmpty()) {
-            List<Skill> skills = skillRepository.findAllById(req.getSkillIds());
-            if (skills.size() != req.getSkillIds().size()) {
-                throw new AppException(ErrorCode.SKILL_NOT_FOUND);
-            }
-            job.setRequiredSkills(new HashSet<>(skills));
+        // ✅ resolve skills theo TÊN (atomic trong 1 transaction)
+        if (req.getSkillNames() != null && !req.getSkillNames().isEmpty()) {
+            Set<Skill> skills = req.getSkillNames().stream()
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(name -> skillRepository.findByNameIgnoreCase(name)
+                            .orElseGet(() -> skillRepository.save(Skill.builder().name(name).build())))
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            job.setRequiredSkills(skills);
         } else {
             job.setRequiredSkills(new HashSet<>());
+        }
+
+        // ✅ tạo JobShift kèm Job
+        if (req.getJobShifts() != null && !req.getJobShifts().isEmpty()) {
+            List<JobShift> shifts = req.getJobShifts().stream()
+                    .map(s -> JobShift.builder()
+                            .date(s.getDate())
+                            .startTime(s.getStartTime())
+                            .endTime(s.getEndTime())
+                            .description(s.getDescription())
+                            .job(job)
+                            .build())
+                    .toList();
+            job.setJobShifts(shifts);
         }
 
         Job saved = jobRepository.save(job);
         return jobMapper.toJobResponse(saved);
     }
+
 
     public PageResponse<JobResponse> getAllJobs(
             int page, int size,
@@ -203,6 +221,20 @@ public class JobService {
             }
 
             job.setRequiredSkills(new HashSet<>(skills));
+        }
+
+        if (req.getJobShifts() != null) {
+            job.getJobShifts().clear();
+            List<JobShift> newShifts = req.getJobShifts().stream()
+                    .map(s -> JobShift.builder()
+                            .date(s.getDate())
+                            .startTime(s.getStartTime())
+                            .endTime(s.getEndTime())
+                            .description(s.getDescription())
+                            .job(job)
+                            .build())
+                    .toList();
+            job.getJobShifts().addAll(newShifts);
         }
 
         // Lưu job

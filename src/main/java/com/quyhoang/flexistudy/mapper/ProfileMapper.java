@@ -4,8 +4,10 @@ import com.quyhoang.flexistudy.dto.request.EducationRequest;
 import com.quyhoang.flexistudy.dto.request.ExperienceRequest;
 import com.quyhoang.flexistudy.dto.response.EducationResponse;
 import com.quyhoang.flexistudy.dto.response.ExperienceResponse;
+import com.quyhoang.flexistudy.dto.response.SkillResponse;
 import com.quyhoang.flexistudy.entity.Education;
 import com.quyhoang.flexistudy.entity.Experience;
+import com.quyhoang.flexistudy.entity.Skill;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
@@ -15,5 +17,7 @@ public interface ProfileMapper {
 
     Experience toExperienceEntity(ExperienceRequest request);
     ExperienceResponse toExperienceResponse(Experience entity);
+
+    SkillResponse toSkillResponse(Skill skill);
 }
 

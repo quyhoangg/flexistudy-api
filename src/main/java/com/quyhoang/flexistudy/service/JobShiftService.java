@@ -32,7 +32,7 @@ public class JobShiftService {
 
         JobShift shift = JobShift.builder()
                 .job(job)
-                .dayOfWeek(req.getDayOfWeek())
+                .date(req.getDate())
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .description(req.getDescription())
@@ -46,7 +46,7 @@ public class JobShiftService {
         JobShift shift = jobShiftRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.SHIFT_NOT_FOUND));
 
-        shift.setDayOfWeek(req.getDayOfWeek());
+        shift.setDate(req.getDate());
         shift.setStartTime(req.getStartTime());
         shift.setEndTime(req.getEndTime());
         shift.setDescription(req.getDescription());

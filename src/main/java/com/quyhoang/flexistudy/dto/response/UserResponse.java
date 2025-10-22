@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -29,4 +30,5 @@ public class UserResponse {
     boolean profileCompleted;
     Set<RoleResponse> roles;
     UpgradePlanResponse upgradePlan;
+    List<SkillResponse> skills;
 }

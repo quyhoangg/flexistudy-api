@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
@@ -15,7 +16,7 @@ import java.time.LocalTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class JobShiftUpdateRequest {
     @NotNull
-    DayOfWeek dayOfWeek;
+    LocalDate date;
 
     @NotNull
     LocalTime startTime;
