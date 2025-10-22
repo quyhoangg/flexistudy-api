@@ -24,6 +24,7 @@ public interface UserMapper {
     User toUser(UserCreationRequest request);
 
     @Mapping(target = "roles", source = "roles")
+    @Mapping(target = "companyName", source = "company.name")
     UserResponse toUserResponse(User user);
 
     RoleResponse toRoleResponse(Role role);
