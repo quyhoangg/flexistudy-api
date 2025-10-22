@@ -51,4 +51,9 @@ app:
     storage-dir: C:/upload
     download-prefix: http://localhost:8080/api/v1/uploads
 
+gemini:
+  api:
+    key: "AIzaSyCgI9Z8-9rYNzo1co-h5-hfRgIS4h9xnsU"
+
+
 

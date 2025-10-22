@@ -47,3 +47,7 @@ app:
   file:
     storage-dir: ${FILE_STORAGE_DIR}
     download-prefix: ${FILE_DOWNLOAD_PREFIX}
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}

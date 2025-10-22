@@ -31,7 +31,8 @@ public class SecurityConfig {
             "/test/send-otp", "/test/welcome", "/test/forgot-password", "/auth/verify-otp",
             "/auth/forgot-password",
             "/auth/verify-forgot-otp",
-            "/auth/reset-password"
+            "/auth/reset-password",
+            "/chat"
     };
 
     @Autowired
