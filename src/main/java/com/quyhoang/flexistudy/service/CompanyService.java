@@ -7,6 +7,7 @@ import com.quyhoang.flexistudy.dto.response.CompanyResponse;
 import com.quyhoang.flexistudy.entity.Company;
 import com.quyhoang.flexistudy.entity.Job;
 import com.quyhoang.flexistudy.entity.User;
+import com.quyhoang.flexistudy.enums.VerificationStatus;
 import com.quyhoang.flexistudy.exception.AppException;
 import com.quyhoang.flexistudy.exception.ErrorCode;
 import com.quyhoang.flexistudy.mapper.CompanyMapper;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -126,5 +128,53 @@ public class CompanyService {
         log.info(" Updated company {} logo -> {}", companyId, newUrl);
 
         return newUrl;
+    }
+
+    @Transactional
+    public CompanyResponse uploadVerificationImage(String companyId, MultipartFile file) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
+
+        // Validate cơ bản
+        if (file.isEmpty()) throw new AppException(ErrorCode.INVALID_REQUEST);
+
+        String url = fileStorageService.uploadFile(file, "company-verifications/" + companyId);
+
+        company.setVerificationImageUrl(url);
+        company.setVerificationSubmittedAt(LocalDateTime.now());
+        company.setVerificationStatus(VerificationStatus.PENDING);
+        company.setVerificationNote(null);
+
+        return companyMapper.toCompanyResponse(companyRepository.save(company));
+    }
+
+    @Transactional
+    public CompanyResponse approveVerification(String companyId, String note) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
+
+        if (company.getVerificationImageUrl() == null) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+
+        company.setVerificationStatus(VerificationStatus.VERIFIED);
+        company.setVerifiedAt(LocalDateTime.now());
+        company.setVerificationNote(note);
+
+        companyRepository.save(company);
+        return companyMapper.toCompanyResponse(company);
+    }
+
+
+    @Transactional
+    public CompanyResponse rejectVerification(String companyId, String reason) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPANY_NOT_FOUND));
+
+        company.setVerificationStatus(VerificationStatus.REJECTED);
+        company.setVerificationNote(reason);
+
+        companyRepository.save(company);
+        return companyMapper.toCompanyResponse(company);
     }
 }

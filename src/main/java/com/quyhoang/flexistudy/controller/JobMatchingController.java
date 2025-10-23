@@ -34,6 +34,5 @@ public class JobMatchingController {
                 .message("Gợi ý công việc theo hồ sơ thành công")
                 .build();
     }
-
 }
 

@@ -41,6 +41,8 @@ public class JobMatchingService {
                 .map(job -> {
                     double skillScore = calculateSkillScore(user, job);
                     boolean timeOk = isTimeCompatible(user, job);
+                    System.out.printf("Job %s -> skillScore=%.2f, timeOk=%s%n",
+                            job.getTitle(), skillScore, timeOk);
                     return new JobMatchResult(job, skillScore, timeOk);
                 })
                 .filter(r -> r.getSkillScore() > 0 && r.isTimeCompatible())
@@ -64,19 +66,28 @@ public class JobMatchingService {
 
     private boolean isTimeCompatible(User user, Job job) {
         if (user.getAvailabilityWindows() == null || user.getAvailabilityWindows().isEmpty()) {
+            System.out.println("❌ User không có availability");
             return false;
         }
 
         for (JobShift shift : job.getJobShifts()) {
-            boolean available = user.getAvailabilityWindows().stream().anyMatch(a ->
-                    a.getDate() != null
-                            && a.getDate().isEqual(shift.getDate())
-                            && !shift.getStartTime().isBefore(a.getStartTime()) // a.start <= shift.start
-                            && !shift.getEndTime().isAfter(a.getEndTime())       // shift.end <= a.end
-            );
+            System.out.printf("JobShift %s: %s -> %s%n", job.getTitle(),
+                    shift.getStartTime(), shift.getEndTime());
 
-            if (!available) return false; // chỉ cần một ca không phủ được là fail
+            boolean available = user.getAvailabilityWindows().stream().anyMatch(a -> {
+                System.out.printf("  Compare with UserAvail %s -> %s%n",
+                        a.getStartTime(), a.getEndTime());
+                return shift.getStartTime().isBefore(a.getEndTime()) &&
+                        shift.getEndTime().isAfter(a.getStartTime());
+            });
+
+            if (!available) {
+                System.out.println("  ❌ Không trùng khung giờ nào");
+                return false;
+            }
         }
+        System.out.println("✅ Time compatible");
         return true;
     }
+
 }

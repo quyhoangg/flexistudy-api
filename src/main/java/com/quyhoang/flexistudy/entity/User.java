@@ -8,7 +8,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -71,7 +73,8 @@ public class User {
     Company company;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<AvailabilityWindow> availabilityWindows = new HashSet<>();
+    List<AvailabilityWindow> availabilityWindows = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "upgrade_plan_id")
     UpgradePlan upgradePlan;

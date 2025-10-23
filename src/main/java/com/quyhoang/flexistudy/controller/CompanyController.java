@@ -91,4 +91,38 @@ public class CompanyController {
                 .message("Logo uploaded successfully")
                 .build();
     }
+
+    @PostMapping("/{id}/verification-image")
+    public ApiResponse<CompanyResponse> uploadVerificationImage(
+            @PathVariable String id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ApiResponse.<CompanyResponse>builder()
+                .result(companyService.uploadVerificationImage(id, file))
+                .message("Verification image uploaded successfully")
+                .build();
+    }
+
+    @PostMapping("/admin/{id}/verify/approve")
+    public ApiResponse<CompanyResponse> approveCompany(
+            @PathVariable String id,
+            @RequestParam(required = false) String note
+    ) {
+        return ApiResponse.<CompanyResponse>builder()
+                .result(companyService.approveVerification(id, note))
+                .message("Company verified successfully")
+                .build();
+    }
+
+    @PostMapping("/admin/{id}/verify/reject")
+    public ApiResponse<CompanyResponse> rejectCompany(
+            @PathVariable String id,
+            @RequestParam String reason
+    ) {
+        return ApiResponse.<CompanyResponse>builder()
+                .result(companyService.rejectVerification(id, reason))
+                .message("Company verification rejected")
+                .build();
+    }
+
 }

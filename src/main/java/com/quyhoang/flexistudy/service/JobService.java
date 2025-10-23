@@ -11,6 +11,7 @@ import com.quyhoang.flexistudy.entity.JobShift;
 import com.quyhoang.flexistudy.entity.Skill;
 import com.quyhoang.flexistudy.enums.EmployeeType;
 import com.quyhoang.flexistudy.enums.JobStatus;
+import com.quyhoang.flexistudy.enums.VerificationStatus;
 import com.quyhoang.flexistudy.exception.AppException;
 import com.quyhoang.flexistudy.exception.ErrorCode;
 import com.quyhoang.flexistudy.mapper.JobMapper;
@@ -30,6 +31,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -73,6 +75,15 @@ public class JobService {
 
         job.setIsActive(req.getIsActive() != null ? req.getIsActive() : true);
 
+        if (company.getVerificationStatus() != VerificationStatus.VERIFIED) {
+            job.setStatus(JobStatus.CLOSED); // hoặc CLOSED
+            job.setIsActive(false);
+        } else {
+            // cho phép theo req, hoặc mặc định CLOSED đến khi recruiter "Publish"
+            job.setStatus(JobStatus.CLOSED);
+            job.setIsActive(true);
+        }
+
         // resolve skills theo TÊN (atomic trong 1 transaction)
         if (req.getSkillNames() != null && !req.getSkillNames().isEmpty()) {
             Set<Skill> skills = req.getSkillNames().stream()
@@ -90,7 +101,7 @@ public class JobService {
         if (req.getJobShifts() != null && !req.getJobShifts().isEmpty()) {
             List<JobShift> shifts = req.getJobShifts().stream()
                     .map(s -> JobShift.builder()
-                            .date(s.getDate())
+                            .date(s.getDate() != null ? s.getDate() : LocalDate.of(1970, 1, 1))
                             .startTime(s.getStartTime())
                             .endTime(s.getEndTime())
                             .description(s.getDescription())
@@ -303,6 +314,5 @@ public class JobService {
                 ))
                 .toList();
     }
-
 }
 

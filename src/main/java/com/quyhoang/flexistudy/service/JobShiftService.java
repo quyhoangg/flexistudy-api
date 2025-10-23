@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -32,7 +33,7 @@ public class JobShiftService {
 
         JobShift shift = JobShift.builder()
                 .job(job)
-                .date(req.getDate())
+                .date(req.getDate() != null ? req.getDate() : LocalDate.of(1970, 1, 1))
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .description(req.getDescription())

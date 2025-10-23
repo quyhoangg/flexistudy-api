@@ -8,10 +8,22 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface CompanyMapper {
-    @Mapping(target = "createdAt", ignore = true)
+
+    @Mapping(target = "verificationStatus", constant = "UNVERIFIED")
+    @Mapping(target = "verificationImageUrl", ignore = true)
+    @Mapping(target = "verificationSubmittedAt", ignore = true)
+    @Mapping(target = "verifiedAt", ignore = true)
+    @Mapping(target = "verificationNote", ignore = true)
+    @Mapping(target = "jobs", ignore = true)
+    @Mapping(target = "recruiters", ignore = true)
     Company toCompany(CompanyCreationRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "verificationStatus", ignore = true)
+    @Mapping(target = "verificationImageUrl", ignore = true)
+    @Mapping(target = "verificationSubmittedAt", ignore = true)
+    @Mapping(target = "verifiedAt", ignore = true)
+    @Mapping(target = "verificationNote", ignore = true)
     void updateCompany(@MappingTarget Company company, CompanyUpdateRequest request);
 
     CompanyResponse toCompanyResponse(Company company);

@@ -2,11 +2,13 @@ package com.quyhoang.flexistudy.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.quyhoang.flexistudy.enums.VerificationStatus;
 import com.quyhoang.flexistudy.exception.CompanyVerifiedStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,9 +37,23 @@ public class Company {
 
     int memberNumber;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    VerificationStatus verificationStatus = VerificationStatus.UNVERIFIED;
+
+    String verificationImageUrl;
+
+    LocalDateTime verificationSubmittedAt;
+    LocalDateTime verifiedAt;
+    String verificationNote;
+
     @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime createdAt;
+    LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

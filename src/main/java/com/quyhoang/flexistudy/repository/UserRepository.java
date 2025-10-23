@@ -20,8 +20,15 @@ public interface UserRepository extends JpaRepository<User,String> {
             String username, String email, Pageable pageable
     );
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.skills WHERE u.id = :id")
+    @Query("""
+    SELECT DISTINCT u 
+    FROM User u
+    LEFT JOIN FETCH u.skills
+    LEFT JOIN FETCH u.availabilityWindows
+    WHERE u.id = :id
+""")
     Optional<User> findByIdWithSkills(@Param("id") String id);
+
 
     Page<User> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
 

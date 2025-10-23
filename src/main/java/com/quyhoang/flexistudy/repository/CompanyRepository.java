@@ -1,6 +1,7 @@
 package com.quyhoang.flexistudy.repository;
 
 import com.quyhoang.flexistudy.entity.Company;
+import com.quyhoang.flexistudy.enums.VerificationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,5 @@ public interface CompanyRepository extends JpaRepository<Company,String> {
     """)
     Page<Company> search(@Param("keyword") String keyword, Pageable pageable);
     boolean existsByName(String name);
+    Page<Company> findByVerificationStatus(VerificationStatus status, Pageable pageable);
 }
