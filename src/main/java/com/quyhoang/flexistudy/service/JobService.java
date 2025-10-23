@@ -66,7 +66,14 @@ public class JobService {
             throw new AppException(ErrorCode.INVALID_REQUEST);
         }
 
-        // ✅ resolve skills theo TÊN (atomic trong 1 transaction)
+        if (req.getQuantity() == null || req.getQuantity() < 1)
+            job.setQuantity(1);
+        else
+            job.setQuantity(req.getQuantity());
+
+        job.setIsActive(req.getIsActive() != null ? req.getIsActive() : true);
+
+        // resolve skills theo TÊN (atomic trong 1 transaction)
         if (req.getSkillNames() != null && !req.getSkillNames().isEmpty()) {
             Set<Skill> skills = req.getSkillNames().stream()
                     .map(String::trim)
@@ -79,7 +86,7 @@ public class JobService {
             job.setRequiredSkills(new HashSet<>());
         }
 
-        // ✅ tạo JobShift kèm Job
+        // tạo JobShift kèm Job
         if (req.getJobShifts() != null && !req.getJobShifts().isEmpty()) {
             List<JobShift> shifts = req.getJobShifts().stream()
                     .map(s -> JobShift.builder()
@@ -211,6 +218,13 @@ public class JobService {
 
         // Cập nhật các trường cơ bản
         jobMapper.updateJob(job, req);
+
+        if (req.getQuantity() != null && req.getQuantity() > 0) {
+            job.setQuantity(req.getQuantity());
+        }
+        if (req.getIsActive() != null) {
+            job.setIsActive(req.getIsActive());
+        }
 
         // Nếu có danh sách kỹ năng mới → cập nhật lại
         if (req.getSkillIds() != null) {

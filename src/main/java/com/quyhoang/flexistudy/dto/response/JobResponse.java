@@ -41,5 +41,7 @@ public class JobResponse {
     List<JobShiftResponse> jobShifts;
 
     List<SkillResponse> requiredSkills;
+    Integer quantity;
+    Boolean isActive;
 }
 

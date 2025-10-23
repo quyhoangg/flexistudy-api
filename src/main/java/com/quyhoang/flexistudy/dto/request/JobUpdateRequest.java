@@ -34,5 +34,7 @@ public class JobUpdateRequest {
     JobStatus status;
     Set<String> skillIds;
     List<JobShiftUpdateRequest> jobShifts;
+    Integer quantity;
+    Boolean isActive;
 }
 

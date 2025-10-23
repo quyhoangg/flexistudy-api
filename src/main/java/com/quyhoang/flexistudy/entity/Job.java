@@ -52,6 +52,14 @@ public class Job {
     @Column(nullable = false, length = 50)
     WorkMode mode;
 
+    @Column(nullable = false)
+    @Builder.Default
+    Integer quantity = 1;
+
+    @Column(nullable = false)
+    @Builder.Default
+    Boolean isActive = true;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     JobCategory category;

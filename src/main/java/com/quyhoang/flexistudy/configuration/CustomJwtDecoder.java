@@ -21,7 +21,6 @@ public class CustomJwtDecoder implements JwtDecoder {
 
     @Override
     public Jwt decode(String token) throws JwtException {
-        // Bỏ check Google token nếu bạn muốn cho phép decode local token
         if (token.startsWith("ya29.")) {
             throw new JwtException("Google access token - skip local JWT decode");
         }

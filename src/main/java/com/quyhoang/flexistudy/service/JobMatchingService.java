@@ -29,8 +29,9 @@ public class JobMatchingService {
     JobRepository jobRepository;
 
     public List<JobMatchResult> findMatchingJobs(String userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdWithSkills(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
 
         List<Job> openJobs = jobRepository.findAll().stream()
                 .filter(j -> j.getStatus() == JobStatus.OPEN)

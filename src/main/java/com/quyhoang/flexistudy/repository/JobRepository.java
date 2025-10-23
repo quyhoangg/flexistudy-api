@@ -36,7 +36,8 @@ public interface JobRepository extends JpaRepository<Job, String>, JpaSpecificat
                                        @Param("city") String city,
                                        Pageable pageable);
 
-
+    @Query("SELECT j FROM Job j WHERE j.isActive = true AND j.status = com.quyhoang.flexistudy.enums.JobStatus.OPEN")
+    Page<Job> findActiveOpenJobs(Pageable pageable);
 
     @Query("""
     SELECT j FROM Job j

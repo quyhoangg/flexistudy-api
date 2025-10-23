@@ -2,8 +2,8 @@ package com.quyhoang.flexistudy.dto.request;
 
 import com.quyhoang.flexistudy.enums.EmployeeType;
 import com.quyhoang.flexistudy.enums.JobCategory;
-import com.quyhoang.flexistudy.enums.JobStatus;
 import com.quyhoang.flexistudy.enums.WorkMode;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -54,6 +54,13 @@ public class JobCreationRequest {
     Set<String> skillNames;
 
     List<JobShiftCreateRequest> jobShifts;
+
+    @Min(1)
+    @Builder.Default
+    Integer quantity = 1;
+
+    @Builder.Default
+    Boolean isActive = true;
 }
 
 

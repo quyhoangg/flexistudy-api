@@ -1,6 +1,7 @@
 package com.quyhoang.flexistudy.controller;
 
 import com.quyhoang.flexistudy.dto.ApiResponse;
+import com.quyhoang.flexistudy.dto.response.SkillResponse;
 import com.quyhoang.flexistudy.service.SkillService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,11 @@ public class SkillController {
     SkillService skillService;
 
     @GetMapping("/suggest")
-    public ApiResponse<List<String>> suggestSkills(@RequestParam String keyword) {
-        return ApiResponse.<List<String>>builder()
+    public ApiResponse<List<SkillResponse>> suggestSkills(@RequestParam String keyword) {
+        return ApiResponse.<List<SkillResponse>>builder()
                 .result(skillService.suggestSkills(keyword))
                 .message("Gợi ý kỹ năng thành công")
                 .build();
     }
+
 }
