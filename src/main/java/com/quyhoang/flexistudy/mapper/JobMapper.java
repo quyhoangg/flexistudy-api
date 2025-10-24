@@ -23,6 +23,8 @@ public interface JobMapper {
     @Mapping(target = "companyName", source = "company.name")
     @Mapping(target = "companyLogoUrl", source = "company.logoUrl")
     @Mapping(target = "requiredSkills", source = "requiredSkills")
+    @Mapping(target = "maxApplicants", source = "maxApplicants")
+    @Mapping(target = "applicantCount", source = "applicantCount")
     JobResponse toJobResponse(Job job);
 
     @AfterMapping

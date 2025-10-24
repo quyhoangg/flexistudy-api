@@ -50,5 +50,7 @@ public class JobCreationRequest {
 
     @NotEmpty
     Set<String> skillIds;
+
+    Integer maxApplicants;
 }
 

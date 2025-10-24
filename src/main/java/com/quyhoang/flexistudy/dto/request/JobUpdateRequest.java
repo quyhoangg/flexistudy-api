@@ -32,5 +32,7 @@ public class JobUpdateRequest {
     String city;
     JobStatus status;
     Set<String> skillIds;
+
+    Integer maxApplicants;
 }
 

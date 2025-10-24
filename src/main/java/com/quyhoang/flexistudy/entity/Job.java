@@ -66,6 +66,10 @@ public class Job {
     @Builder.Default
     LocalDateTime postedAt = LocalDateTime.now();
 
+    Integer maxApplicants; // Số lượng ứng viên tối đa
+    @Builder.Default
+    Integer applicantCount = 0; // Số lượng ứng viên hiện tại
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     Company company;

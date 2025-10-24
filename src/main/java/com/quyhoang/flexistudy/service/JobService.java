@@ -55,7 +55,7 @@ public class JobService {
 
         Job job = jobMapper.toJob(req);
         job.setCompany(company);
-        job.setStatus(JobStatus.CLOSED);
+        job.setStatus(JobStatus.OPEN);
 
         //  Nếu chưa có expiryDate → mặc định 30 ngày kể từ hôm nay
         if (job.getExpiryDate() == null) {

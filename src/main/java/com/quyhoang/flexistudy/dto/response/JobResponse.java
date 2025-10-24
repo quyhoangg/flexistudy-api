@@ -40,5 +40,8 @@ public class JobResponse {
     String companyLogoUrl;
 
     List<SkillResponse> requiredSkills;
+
+    Integer maxApplicants;
+    Integer applicantCount;
 }
 

@@ -58,6 +58,13 @@ public class ApplicationService {
         if (job.getStatus() == JobStatus.CLOSED)
             throw new AppException(ErrorCode.JOB_CLOSED);
 
+        // 🔹 Kiểm tra giới hạn ứng viên
+        if (job.getMaxApplicants() != null && job.getMaxApplicants() > 0 && job.getApplicantCount() >= job.getMaxApplicants()) {
+            job.setStatus(JobStatus.CLOSED);
+            jobRepository.save(job);
+            throw new AppException(ErrorCode.JOB_CLOSED);
+        }
+
         // 🔹 4. Lấy user hiện tại
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -76,6 +83,14 @@ public class ApplicationService {
 
         // 🔹 6. Lưu vào DB
         Application saved = applicationRepository.save(app);
+
+        // 🔹 Cập nhật số lượng ứng viên và kiểm tra giới hạn
+        job.setApplicantCount(job.getApplicantCount() + 1);
+        if (job.getMaxApplicants() != null && job.getMaxApplicants() > 0 && job.getApplicantCount() >= job.getMaxApplicants()) {
+            job.setStatus(JobStatus.CLOSED);
+        }
+        jobRepository.save(job);
+
 
         // 🔹 7. Log ra console/server
         log.info(" User [{}] applied for job [{}] at company [{}]",
