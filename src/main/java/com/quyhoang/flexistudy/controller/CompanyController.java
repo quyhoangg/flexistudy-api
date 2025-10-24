@@ -92,7 +92,7 @@ public class CompanyController {
                 .build();
     }
 
-    @PostMapping("/{id}/verification-image")
+    @PostMapping("/verification-image/{id}")
     public ApiResponse<CompanyResponse> uploadVerificationImage(
             @PathVariable String id,
             @RequestParam("file") MultipartFile file
@@ -103,7 +103,7 @@ public class CompanyController {
                 .build();
     }
 
-    @PostMapping("/admin/{id}/verify/approve")
+    @PostMapping("/verify/approve/{id}")
     public ApiResponse<CompanyResponse> approveCompany(
             @PathVariable String id,
             @RequestParam(required = false) String note
@@ -114,7 +114,7 @@ public class CompanyController {
                 .build();
     }
 
-    @PostMapping("/admin/{id}/verify/reject")
+    @PostMapping("/verify/reject/{id}")
     public ApiResponse<CompanyResponse> rejectCompany(
             @PathVariable String id,
             @RequestParam String reason
@@ -124,5 +124,4 @@ public class CompanyController {
                 .message("Company verification rejected")
                 .build();
     }
-
 }
