@@ -20,6 +20,12 @@ public interface ApplicationRepository extends CrudRepository<Application, Strin
 
     List<Application> findByCompany_Id(String companyId);
 
+    boolean existsByJob_Company_IdAndUser_IdAndStatus(
+            String companyId,
+            String userId,
+            ApplicationStatus status
+    );
+
     List<Application> findByJob(Job job);
     List<Application> findByUser(User user);
     Optional<Application> findByJobAndUser(Job job, User user);

@@ -80,6 +80,5 @@ public class User {
     UpgradePlan upgradePlan;
 
     @Column
-    LocalDate planExpirationDate; // Ngày hết hạn gói hiện tại
-
+    LocalDate planExpirationDate;
 }
