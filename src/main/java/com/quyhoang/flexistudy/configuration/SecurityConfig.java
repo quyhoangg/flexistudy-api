@@ -71,15 +71,13 @@ public class SecurityConfig {
                 "https://flexistudy-fe.onrender.com"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);
-        config.setExposedHeaders(List.of("Authorization", "Content-Type")); // optional
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
 
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
