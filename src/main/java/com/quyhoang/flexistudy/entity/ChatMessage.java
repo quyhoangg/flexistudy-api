@@ -34,6 +34,6 @@ public class ChatMessage {
     @CreationTimestamp
     LocalDateTime sentAt;
 
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     boolean read = false;
 }
