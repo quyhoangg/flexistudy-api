@@ -18,7 +18,7 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        // ✅ Xác định server URL động: nếu deploy lên Render, Swagger sẽ tự hiểu đúng
+        // Xác định server URL động: nếu deploy lên Render, Swagger sẽ tự hiểu đúng
         String serverUrl = System.getenv("RENDER_EXTERNAL_URL") != null
                 ? System.getenv("RENDER_EXTERNAL_URL") + contextPath
                 : "http://localhost:8080" + contextPath;

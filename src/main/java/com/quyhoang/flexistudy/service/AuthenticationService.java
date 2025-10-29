@@ -166,9 +166,9 @@ public class AuthenticationService {
                         .build();
 
                 userRepository.save(user);
-                log.info("✅ New Google user created with ROLE_USER: {}", email);
+                log.info("New Google user created with ROLE_USER: {}", email);
             } catch (DataIntegrityViolationException e) {
-                log.warn("⚠ Duplicate email detected, fallback to existing user record.");
+                log.warn("Duplicate email detected, fallback to existing user record.");
                 user = userRepository.findByEmail(email)
                         .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
             }
