@@ -1,6 +1,7 @@
 package com.quyhoang.flexistudy.repository;
 
 import com.quyhoang.flexistudy.entity.User;
+import com.quyhoang.flexistudy.enums.RoleName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,13 @@ public interface UserRepository extends JpaRepository<User,String> {
     Page<User> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(
             String username, String email, Pageable pageable
     );
+
+    @Query("""
+           SELECT COUNT(DISTINCT u)
+           FROM User u JOIN u.roles r
+           WHERE r.name = :roleName
+           """)
+    long countByRoleName(@Param("roleName") RoleName roleName);
 
     @Query("""
     SELECT DISTINCT u 
